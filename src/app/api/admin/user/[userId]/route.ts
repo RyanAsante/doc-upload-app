@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function GET(req: NextRequest, context: any) {
   const userId = context?.params?.userId;
 
