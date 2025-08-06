@@ -38,11 +38,13 @@ export async function POST(req: NextRequest) {
 
   const form = new IncomingForm({ uploadDir, keepExtensions: true });
 
-  return new Promise((resolve) => {
+  return new Promise<Response>((resolve) => {
     form.parse(mockReq, async (err, fields, files) => {
       if (err) {
         console.error('❌ Upload error:', err);
-        return resolve(NextResponse.json({ message: 'Upload failed' }, { status: 500 }));
+        return resolve(
+          NextResponse.json({ message: 'Upload failed' }, { status: 500 })
+        );
       }
 
       console.log('📦 Parsed files:', files);
