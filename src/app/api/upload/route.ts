@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaClient } from '@prisma/client';
+import type { IncomingMessage } from 'http';
 
 const prisma = new PrismaClient();
 
@@ -26,14 +27,14 @@ export async function POST(req: NextRequest) {
   const body = await req.arrayBuffer();
   const stream = Readable.from(Buffer.from(body));
 
-  const mockReq: any = Object.assign(stream, {
+  const mockReq = Object.assign(stream, {
     headers: {
       'content-type': contentType,
       'content-length': contentLength,
     },
     method: 'POST',
     url: '',
-  });
+  }) as IncomingMessage;
 
   const form = new IncomingForm({ uploadDir, keepExtensions: true });
 
