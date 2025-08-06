@@ -3,13 +3,11 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function GET(req: NextRequest, contextPromise: Promise<{ params: { userId: string } }>) {
-  const { params } = await contextPromise;
-  const userId = params.userId;
-
-  if (!userId) {
-    return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
-  }
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { userId: string } }
+) {
+  const { userId } = params;
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
