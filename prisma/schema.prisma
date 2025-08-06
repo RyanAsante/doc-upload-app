@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String   // or use OAuth if not using passwords
+  uploads   Upload[]
+  createdAt DateTime @default(now())
+}
+
+model Upload {
+  id        String   @id @default(uuid())
+  name      String
+  imagePath String
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
