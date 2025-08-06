@@ -42,7 +42,7 @@ export default function AdminUserPage() {
       {uploads.length === 0 && <p>No uploads yet.</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {uploads.map((upload: any) => (
+        {uploads.map((upload: { id: string; imagePath: string; createdAt: string }) => (
           <div key={upload.id} className="border rounded p-2">
             <img
               src={upload.imagePath}
