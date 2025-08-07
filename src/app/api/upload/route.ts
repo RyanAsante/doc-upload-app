@@ -56,8 +56,16 @@ export async function POST(req: NextRequest) {
       const fileId = uuidv4();
       const newFileName = `${fileId}_${file.originalFilename}`;
       
-      // Read the file buffer
-      const fileBuffer = fs.readFileSync(file.filepath);
+      // Read the file buffer with error handling
+      let fileBuffer;
+      try {
+        fileBuffer = fs.readFileSync(file.filepath);
+      } catch (readError) {
+        console.error('❌ File read error:', readError);
+        return resolve(
+          NextResponse.json({ message: 'Failed to read uploaded file' }, { status: 500 })
+        );
+      }
       
       // Upload to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
