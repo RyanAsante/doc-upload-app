@@ -4,10 +4,8 @@ import { Readable } from 'stream';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { PrismaClient } from '@prisma/client';
 import type { IncomingMessage } from 'http';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export const config = {
   api: {
