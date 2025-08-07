@@ -29,28 +29,82 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: '0 auto', paddingTop: '4rem' }}>
-      <h1>Login</h1>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ display: 'block', width: '100%', marginBottom: 10 }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ display: 'block', width: '100%', marginBottom: 10 }}
-        />
-        <button type="submit" style={{ width: '100%' }}>Login</button>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-      </form>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center px-6">
+      <div className="max-w-md w-full">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-lg">V</span>
+            </div>
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              VaultDrop
+            </span>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
+          <p className="text-gray-600">Sign in to your account to continue</p>
+        </div>
+
+        {/* Form */}
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-gray-200/50">
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email address
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              className="w-full bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Sign in
+            </button>
+            
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-gray-600">
+              Don&apos;t have an account?{' '}
+              <button
+                onClick={() => router.push('/signup')}
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Sign up
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

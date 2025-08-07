@@ -38,41 +38,104 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="p-10 max-w-md mx-auto space-y-4">
-      <h1 className="text-2xl font-bold mb-4">Create Account</h1>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center px-6">
+      <div className="max-w-md w-full">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-lg">V</span>
+            </div>
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              VaultDrop
+            </span>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h1>
+          <p className="text-gray-600">Join thousands of users who trust VaultDrop</p>
+        </div>
 
-      <input
-        name="name"
-        value={form.name}
-        onChange={handleChange}
-        placeholder="Full Name"
-        className="w-full p-2 border rounded"
-      />
-      <input
-        name="email"
-        value={form.email}
-        onChange={handleChange}
-        placeholder="Email"
-        type="email"
-        className="w-full p-2 border rounded"
-      />
-      <input
-        name="password"
-        value={form.password}
-        onChange={handleChange}
-        placeholder="Password"
-        type="password"
-        className="w-full p-2 border rounded"
-      />
+        {/* Form */}
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-gray-200/50">
+          <form className="space-y-6">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="Enter your full name"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                type="email"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Create a password"
+                type="password"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
 
-      <button
-        onClick={handleSubmit}
-        className="w-full bg-black text-white py-2 rounded"
-      >
-        Sign Up
-      </button>
+            <button
+              onClick={handleSubmit}
+              className="w-full bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Create account
+            </button>
+            
+            {message && (
+              <div className={`rounded-xl p-4 ${
+                message.includes('❌') 
+                  ? 'bg-red-50 border border-red-200' 
+                  : 'bg-green-50 border border-green-200'
+              }`}>
+                <p className={`text-sm ${
+                  message.includes('❌') ? 'text-red-600' : 'text-green-600'
+                }`}>
+                  {message}
+                </p>
+              </div>
+            )}
+          </form>
 
-      {message && <p className="mt-2 text-center">{message}</p>}
+          <div className="mt-6 text-center">
+            <p className="text-gray-600">
+              Already have an account?{' '}
+              <button
+                onClick={() => router.push('/login')}
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Sign in
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
