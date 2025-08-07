@@ -10,15 +10,7 @@ export default function AdminPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if admin is authenticated
-    const isAuthenticated = localStorage.getItem('adminAuthenticated');
-    
-    if (!isAuthenticated) {
-      router.push('/admin/login');
-      return;
-    }
-
-    // Fetch users if authenticated
+    // Fetch users (authentication is handled by middleware)
     fetch('/api/admin/users')
       .then((res) => res.json())
       .then((data) => {
@@ -28,7 +20,7 @@ export default function AdminPage() {
       .catch(() => {
         setLoading(false);
       });
-  }, [router]);
+  }, []);
 
   if (loading) {
     return (
@@ -43,8 +35,8 @@ export default function AdminPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Admin: All User Accounts</h1>
         <button
-          onClick={() => {
-            localStorage.removeItem('adminAuthenticated');
+          onClick={async () => {
+            await fetch('/api/admin/logout', { method: 'POST' });
             router.push('/admin/login');
           }}
           className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"

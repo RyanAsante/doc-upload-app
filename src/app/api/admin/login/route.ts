@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { password } = body;
 
-    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASS;
+    const adminPassword = process.env.ADMIN_PASSWORD;
 
     if (!adminPassword) {
       console.error('❌ Admin password not configured');
@@ -14,7 +14,17 @@ export async function POST(req: NextRequest) {
 
     if (password === adminPassword) {
       console.log('✅ Admin login successful');
-      return NextResponse.json({ message: 'Admin login successful' }, { status: 200 });
+      
+      // Create a secure HTTP-only cookie
+      const response = NextResponse.json({ message: 'Admin login successful' }, { status: 200 });
+      response.cookies.set('admin-auth', 'true', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 24, // 24 hours
+      });
+      
+      return response;
     } else {
       console.log('❌ Invalid admin password attempt');
       return NextResponse.json({ error: 'Invalid admin password' }, { status: 401 });

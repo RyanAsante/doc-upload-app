@@ -19,8 +19,7 @@ export default function AdminLoginPage() {
       });
 
       if (res.ok) {
-        // Store admin session
-        localStorage.setItem('adminAuthenticated', 'true');
+        // Redirect to admin page (authentication is handled by middleware)
         router.push('/admin');
       } else {
         setError('Invalid admin password');
