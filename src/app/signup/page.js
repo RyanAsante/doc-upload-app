@@ -27,8 +27,8 @@ export default function SignupPage() {
         // ✅ Auto-login: store email in localStorage
         localStorage.setItem('userEmail', form.email);
 
-        // ✅ Redirect to upload page
-        router.push('/upload');
+        // ✅ Redirect to dashboard
+        router.push('/dashboard');
       } else {
         setMessage(`❌ ${data.message}`);
       }

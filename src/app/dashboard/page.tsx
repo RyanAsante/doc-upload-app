@@ -33,6 +33,12 @@ export default function DashboardPage() {
     fetchUserUploads(userEmail);
   }, [router]);
 
+  // Redirect if not logged in
+  if (typeof window !== 'undefined' && !localStorage.getItem('userEmail')) {
+    router.push('/login');
+    return null;
+  }
+
   const fetchUserUploads = async (userEmail: string) => {
     try {
       const response = await fetch('/api/get-uploads', {

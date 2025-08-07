@@ -20,9 +20,9 @@ export default function LoginPage() {
     const data = await res.json()
 
     if (res.ok) {
-      console.log('✅ Logged in! Redirecting to /upload');
+      console.log('✅ Logged in! Redirecting to dashboard');
       localStorage.setItem('userEmail', email);
-      router.push('/upload')
+      router.push('/dashboard')
     } else {
       setError(data.error || 'Login failed')
     }
