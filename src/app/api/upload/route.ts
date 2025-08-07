@@ -73,12 +73,19 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Get the public URL
-      const { data } = supabase.storage
+      // Get a signed URL for private bucket access
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('uploads')
-        .getPublicUrl(newFileName);
+        .createSignedUrl(newFileName, 60 * 60 * 24 * 365); // 1 year expiry
       
-      const publicUrl = (data.publicUrl as string) || '';
+      if (signedUrlError) {
+        console.error('❌ Signed URL error:', signedUrlError);
+        return resolve(
+          NextResponse.json({ message: 'Upload failed' }, { status: 500 })
+        );
+      }
+      
+      const publicUrl = signedUrlData.signedUrl;
 
       const userEmail = req.headers.get('x-user-email') || 'unknown@example.com';
 
