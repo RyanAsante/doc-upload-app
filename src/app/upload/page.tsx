@@ -201,10 +201,10 @@ const handleLogout = () => {
         
         <div className="mt-8 text-center">
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/dashboard')}
             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
           >
-            ← Back to Home
+            ← Back to Dashboard
           </button>
         </div>
       </div>
