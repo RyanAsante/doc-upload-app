@@ -55,7 +55,7 @@ const handleLogout = () => {
     }
   };
 
-  const captureImage = () => {
+  const captureImage = async () => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
     if (canvas && video) {
@@ -65,14 +65,42 @@ const handleLogout = () => {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       context.drawImage(video, 0, 0);
-      canvas.toBlob((blob) => {
+      canvas.toBlob(async (blob) => {
         if (blob) {
           const capturedFile = new File([blob], 'captured.jpg', { type: 'image/jpeg' });
           setFile(capturedFile);
-          setStatus('Photo captured!');
+          setStatus('Photo captured! Uploading...');
           stopCamera();
+          
+          // Auto-upload the captured image
+          await uploadCapturedImage(capturedFile);
         }
       }, 'image/jpeg');
+    }
+  };
+
+  const uploadCapturedImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append('document', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'x-user-email': localStorage.getItem('userEmail') || '', 
+        },
+        body: formData,
+      });
+
+      if (res.ok) {
+        setStatus('✅ Photo uploaded successfully!');
+        setFile(null);
+      } else {
+        setStatus('❌ Upload failed.');
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus('❌ An error occurred during upload.');
     }
   };
 
@@ -161,7 +189,11 @@ const handleLogout = () => {
             </div>
           )}
           
-          {status && <p className="mt-4 text-sm text-gray-700">{status}</p>}
+          {status && (
+            <div className="mt-4 p-3 rounded-lg bg-gray-50 border">
+              <p className="text-sm text-gray-700">{status}</p>
+            </div>
+          )}
         </div>
 
         {/* Drag & Drop Upload Section */}

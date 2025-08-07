@@ -20,7 +20,9 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     const fileId = uuidv4();
-    const newFileName = `${fileId}_${file.name}`;
+    // Clean filename for Supabase storage (remove special characters and spaces)
+    const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const newFileName = `${fileId}_${cleanFileName}`;
     
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
