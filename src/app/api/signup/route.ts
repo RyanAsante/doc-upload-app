@@ -4,12 +4,6 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   try {
-    // Debug: Check if environment variables are available
-    console.log("🔍 Environment check:");
-    console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
-    console.log("DIRECT_URL exists:", !!process.env.DIRECT_URL);
-    console.log("ADMIN_PASSWORD exists:", !!process.env.ADMIN_PASSWORD);
-    
     const body = await req.json();
     const { name, email, password } = body;
 
