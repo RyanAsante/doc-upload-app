@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 type User = {
     id: string;
@@ -19,19 +19,34 @@ export default function AdminUserPage() {
   const { userId } = useParams();
   const [user, setUser] = useState<User | null>(null);
   const [uploads, setUploads] = useState<Upload[]>([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
+    // Check if admin is authenticated
+    const isAuthenticated = localStorage.getItem('adminAuthenticated');
+    
+    if (!isAuthenticated) {
+      router.push('/admin/login');
+      return;
+    }
+
     if (userId) {
       fetch(`/api/admin/user/${userId}`)
         .then((res) => res.json())
         .then((data) => {
           setUser(data.user);
           setUploads(data.uploads);
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
         });
     }
-  }, [userId]);
+  }, [userId, router]);
 
-  if (!user) return <div className="p-10">Loading user data...</div>;
+  if (loading) return <div className="p-10">Loading user data...</div>;
+  if (!user) return <div className="p-10">User not found</div>;
 
   return (
     <div className="p-10 space-y-8">

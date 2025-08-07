@@ -27,6 +27,15 @@ export default function HomePage() {
             Sign Up
           </button>
         </div>
+        
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <button
+            onClick={() => router.push('/admin/login')}
+            className="text-gray-500 hover:text-gray-700 text-sm underline"
+          >
+            Admin Access
+          </button>
+        </div>
       </div>
     </div>
   );
