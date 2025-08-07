@@ -29,12 +29,37 @@ export default function HomePage() {
         </div>
         
         <div className="mt-8 pt-6 border-t border-gray-200">
-          <button
-            onClick={() => router.push('/admin/login')}
-            className="text-gray-500 hover:text-gray-700 text-sm underline"
-          >
-            Admin Access
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => router.push('/admin/login')}
+              className="text-gray-500 hover:text-gray-700 text-sm underline"
+            >
+              Admin Access
+            </button>
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="text-blue-600 hover:text-blue-800 text-sm underline"
+            >
+              My Dashboard
+            </button>
+          </div>
+        </div>
+        
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => router.push('/admin/login')}
+              className="text-gray-500 hover:text-gray-700 text-sm underline"
+            >
+              Admin Access
+            </button>
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="text-blue-600 hover:text-blue-800 text-sm underline"
+            >
+              My Dashboard
+            </button>
+          </div>
         </div>
       </div>
     </div>
