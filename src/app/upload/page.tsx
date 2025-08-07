@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import FileUpload from '@/components/FileUpload';
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -107,65 +108,74 @@ const handleLogout = () => {
   };
 
   return (
-    <div className="p-10 max-w-2xl mx-auto space-y-4">
-    <div className="flex justify-end">
-      <button
-        onClick={handleLogout}
-        className="text-sm text-gray-600 underline hover:text-black"
-      >
-        Logout
-      </button>
-    </div>
-        
-      <h1 className="text-2xl font-bold mb-4">Upload Document</h1>
-
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="w-full"
-      />
-
-      {!cameraOn ? (
-        <button
-          onClick={startCamera}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Open Camera
-        </button>
-      ) : (
-        <>
-          <video ref={videoRef} className="w-full max-w-sm rounded border" 
-           autoPlay
-           playsInline
-           muted
-          />
-          <canvas ref={canvasRef} hidden />
-          <div className="flex gap-4 mt-2">
-            <button
-              onClick={captureImage}
-              className="bg-green-600 text-white px-4 py-2 rounded"
-            >
-              Capture Photo
-            </button>
-            <button
-              onClick={stopCamera}
-              className="bg-red-600 text-white px-4 py-2 rounded"
-            >
-              Cancel Camera
-            </button>
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Upload Documents</h1>
+            <p className="text-gray-600">Drag and drop your files or use the camera to capture documents</p>
           </div>
-        </>
-      )}
+          <button
+            onClick={handleLogout}
+            className="text-sm text-gray-600 underline hover:text-black"
+          >
+            Logout
+          </button>
+        </div>
 
-      <button
-        onClick={handleSubmit}
-        className="bg-black text-white px-4 py-2 rounded mt-4"
-      >
-        Upload
-      </button>
+        {/* Camera Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Camera Capture</h2>
+          
+          {!cameraOn ? (
+            <button
+              onClick={startCamera}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              📷 Open Camera
+            </button>
+          ) : (
+            <div className="space-y-4">
+              <video 
+                ref={videoRef} 
+                className="w-full max-w-md rounded-lg border border-gray-300" 
+                autoPlay
+                playsInline
+                muted
+              />
+              <canvas ref={canvasRef} hidden />
+              <div className="flex gap-4">
+                <button
+                  onClick={captureImage}
+                  className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  📸 Capture Photo
+                </button>
+                <button
+                  onClick={stopCamera}
+                  className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  ❌ Cancel Camera
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {status && <p className="mt-4 text-sm text-gray-700">{status}</p>}
+        </div>
 
-      {status && <p className="mt-2 text-sm text-gray-700">{status}</p>}
+        {/* Drag & Drop Upload Section */}
+        <FileUpload />
+        
+        <div className="mt-8 text-center">
+          <button
+            onClick={() => router.push('/')}
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+          >
+            ← Back to Home
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
