@@ -6,6 +6,7 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import type { IncomingMessage } from 'http';
 import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 export const config = {
   api: {
@@ -54,11 +55,30 @@ export async function POST(req: NextRequest) {
 
       const fileId = uuidv4();
       const newFileName = `${fileId}_${file.originalFilename}`;
-      const newFilePath = path.join(uploadDir, newFileName);
+      
+      // Read the file buffer
+      const fileBuffer = fs.readFileSync(file.filepath);
+      
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('uploads')
+        .upload(newFileName, fileBuffer, {
+          contentType: file.mimetype || 'image/jpeg',
+        });
 
-      fs.renameSync(file.filepath, newFilePath);
+      if (uploadError) {
+        console.error('❌ Supabase upload error:', uploadError);
+        return resolve(
+          NextResponse.json({ message: 'Upload failed' }, { status: 500 })
+        );
+      }
 
-      const publicUrl = `/uploads/${newFileName}`;
+      // Get the public URL
+      const { data } = supabase.storage
+        .from('uploads')
+        .getPublicUrl(newFileName);
+      
+      const publicUrl = (data.publicUrl as string) || '';
 
       const userEmail = req.headers.get('x-user-email') || 'unknown@example.com';
 
