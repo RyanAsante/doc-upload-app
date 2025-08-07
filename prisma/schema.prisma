@@ -3,17 +3,17 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String?
-  email     String   @unique
-  password  String   // or use OAuth if not using passwords
-  uploads   Upload[]
-  createdAt DateTime @default(now())
+  id       String    @id @default(uuid())
+  name     String
+  email    String    @unique
+  password String
+  uploads  Upload[]  // 👈 Relation back to Upload
 }
 
 model Upload {
