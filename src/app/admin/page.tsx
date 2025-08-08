@@ -77,13 +77,18 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">V</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">VaultDrop Admin</h1>
-                <p className="text-sm text-gray-500">Manage user accounts and uploads</p>
-              </div>
+              <button
+                onClick={() => router.push('/')}
+                className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+              >
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">V</span>
+                </div>
+                <div>
+                  <h1 className="text-xl font-semibold text-gray-900">VaultDrop Admin</h1>
+                  <p className="text-sm text-gray-500">Manage user accounts and uploads</p>
+                </div>
+              </button>
             </div>
             <button
               onClick={async () => {
