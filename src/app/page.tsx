@@ -56,17 +56,17 @@ export default function HomePage() {
             </h1>
             
             <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-12 leading-relaxed">
-              Upload, organize, and access your documents securely from anywhere. 
-              Built for speed, designed for simplicity.
+              Access your documents securely from anywhere. 
+              Built for security, designed for simplicity.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-              <button
-                onClick={() => router.push('/signup')}
-                className="bg-black text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-lg"
-              >
-                Start uploading →
-              </button>
+                          <button
+              onClick={() => router.push('/signup')}
+              className="bg-black text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Get started →
+            </button>
               <button
                 onClick={() => router.push('/login')}
                 className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl text-lg font-semibold hover:border-gray-400 hover:bg-gray-50 transition-all duration-200"
@@ -87,8 +87,8 @@ export default function HomePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Drag & Drop Upload</h3>
-            <p className="text-gray-600">Simply drag your files or use our camera to capture documents instantly.</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Secure Document Access</h3>
+            <p className="text-gray-600">Access your documents securely from anywhere, uploaded by administrators.</p>
           </div>
           
           <div className="text-center p-8 rounded-2xl bg-white/50 backdrop-blur-sm border border-gray-200/50 hover:shadow-lg transition-all duration-300">

@@ -93,18 +93,12 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900">My Documents</h1>
             <p className="text-gray-600 mt-2">
-              Welcome back, {user?.name}! You have {user?.uploadCount} uploads.
+              Welcome back, {user?.name}! You have {user?.uploadCount} documents.
             </p>
           </div>
           <div className="flex gap-4">
-            <button
-              onClick={() => router.push('/upload')}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              📤 Upload Files
-            </button>
             <button
               onClick={handleLogout}
               className="text-gray-600 hover:text-gray-800 px-4 py-3 rounded-lg border border-gray-300 hover:border-gray-400 transition-colors"
@@ -124,7 +118,7 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Uploads</p>
+                <p className="text-sm font-medium text-gray-600">Total Documents</p>
                 <p className="text-2xl font-bold text-gray-900">{user?.uploadCount || 0}</p>
               </div>
             </div>
@@ -164,7 +158,7 @@ export default function DashboardPage() {
         {/* Uploads Grid */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">My Uploads</h2>
+            <h2 className="text-xl font-semibold text-gray-900">My Documents</h2>
           </div>
           
           {uploads.length === 0 ? (
@@ -172,14 +166,8 @@ export default function DashboardPage() {
               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">No uploads yet</h3>
-              <p className="mt-2 text-gray-600">Get started by uploading your first document.</p>
-              <button
-                onClick={() => router.push('/upload')}
-                className="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Upload Files
-              </button>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">No documents yet</h3>
+              <p className="mt-2 text-gray-600">Documents will appear here once they are uploaded by an administrator.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">

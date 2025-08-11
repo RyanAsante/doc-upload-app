@@ -21,6 +21,8 @@ export default function AdminUserPage() {
   const [user, setUser] = useState<User | null>(null);
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
 
   useEffect(() => {
     if (userId) {
@@ -36,6 +38,44 @@ export default function AdminUserPage() {
         });
     }
   }, [userId]);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploading(true);
+    setUploadStatus('Uploading file...');
+
+    const formData = new FormData();
+    formData.append('document', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'x-user-email': user.email,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        setUploadStatus('File uploaded successfully!');
+        // Refresh the uploads list
+        const userResponse = await fetch(`/api/admin/user/${userId}`);
+        const userData = await userResponse.json();
+        setUploads(userData.uploads);
+        setUser(userData.user);
+      } else {
+        setUploadStatus('Upload failed. Please try again.');
+      }
+    } catch {
+      setUploadStatus('An error occurred during upload.');
+    } finally {
+      setUploading(false);
+      // Clear status after 3 seconds
+      setTimeout(() => setUploadStatus(''), 3000);
+    }
+  };
 
   if (loading) {
     return (
@@ -144,6 +184,37 @@ export default function AdminUserPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* File Upload Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Document for {user.name}</h2>
+          <div className="flex items-center space-x-4">
+            <input
+              type="file"
+              onChange={handleFileUpload}
+              disabled={uploading}
+              accept="image/*,.pdf,.doc,.docx"
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+            {uploading && (
+              <div className="flex items-center space-x-2 text-blue-600">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                <span>Uploading...</span>
+              </div>
+            )}
+          </div>
+          {uploadStatus && (
+            <div className={`mt-3 p-3 rounded-lg ${
+              uploadStatus.includes('successfully') 
+                ? 'bg-green-50 border border-green-200 text-green-700' 
+                : uploadStatus.includes('failed') || uploadStatus.includes('error')
+                ? 'bg-red-50 border border-red-200 text-red-700'
+                : 'bg-blue-50 border border-blue-200 text-blue-700'
+            }`}>
+              {uploadStatus}
+            </div>
+          )}
         </div>
 
         {/* Uploads Section */}
