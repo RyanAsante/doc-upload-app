@@ -68,13 +68,30 @@ export default function AdminUserPage() {
       
       console.log('Video element found:', videoRef.current);
       
-      // Request camera access
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 }
-        } 
-      });
+      // Request camera access with back camera preference and document-friendly dimensions
+      let stream;
+      try {
+        // First try to get back camera with ideal settings
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: {
+            width: { ideal: 1280, min: 640 },
+            height: { ideal: 720, min: 480 },
+            facingMode: 'environment', // Prefer back camera
+            aspectRatio: { ideal: 1.4 } // Closer to A4 paper ratio
+          } 
+        });
+      } catch (err) {
+        console.log('Back camera not available, trying front camera...');
+        // Fallback to front camera if back camera fails
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: {
+            width: { ideal: 1280, min: 640 },
+            height: { ideal: 720, min: 480 },
+            facingMode: 'user', // Front camera fallback
+            aspectRatio: { ideal: 1.4 }
+          } 
+        });
+      }
       
       console.log('Camera stream obtained:', stream);
       
@@ -327,13 +344,17 @@ export default function AdminUserPage() {
             {/* Always render video element but hide when not in use */}
             <video 
               ref={videoRef} 
-              className={`w-full h-64 object-cover rounded-lg border border-gray-300 bg-black transition-opacity duration-300 ${
+              className={`w-full rounded-lg border border-gray-300 bg-black transition-opacity duration-300 ${
                 cameraOn ? 'opacity-100' : 'opacity-0 pointer-events-none'
               }`}
               autoPlay
               playsInline
               muted
-              style={{ minHeight: '256px', display: cameraOn ? 'block' : 'none' }}
+              style={{ 
+                height: '400px', 
+                display: cameraOn ? 'block' : 'none',
+                transform: 'scaleX(-1)' // Mirror the video for better UX
+              }}
             />
             
             {!cameraOn ? (
@@ -367,12 +388,11 @@ export default function AdminUserPage() {
               <div className="space-y-4">
                 {/* Camera Preview Box */}
                 <div className="bg-gray-100 rounded-xl p-4 border-2 border-dashed border-gray-300">
-                  <div className="mt-2 text-center text-sm text-gray-500">
-                    Camera is active - position document in view
+                  <div className="text-center text-sm text-gray-500 mb-2">
+                    📄 Position your document in the camera view above
                   </div>
-                  {/* Debug info */}
-                  <div className="mt-2 text-xs text-gray-400 text-center">
-                    Video element should show camera feed above
+                  <div className="text-xs text-gray-400 text-center">
+                    💡 Tip: Hold the camera steady and ensure good lighting for best results
                   </div>
                 </div>
                 
