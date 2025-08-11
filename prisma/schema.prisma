@@ -13,14 +13,28 @@ model User {
   name     String
   email    String    @unique
   password String
+  role     UserRole  @default(CUSTOMER)
   uploads  Upload[]  // 👈 Relation back to Upload
 }
 
 model Upload {
   id        String   @id @default(uuid())
+  title     String?  // 👈 Optional title for files
   name      String
   imagePath String
+  fileType  FileType @default(IMAGE) // 👈 Image or Video
   userId    String?
   user      User?     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+}
+
+enum UserRole {
+  CUSTOMER
+  MANAGER    // 👈 New level below admin
+  ADMIN
+}
+
+enum FileType {
+  IMAGE
+  VIDEO
 }

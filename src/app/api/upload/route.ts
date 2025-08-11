@@ -54,10 +54,14 @@ export async function POST(req: NextRequest) {
       where: { email: userEmail },
     });
     
+    // Determine file type
+    const fileType = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
+    
     await prisma.upload.create({
       data: {
-        name: user?.name || userEmail,
+        name: file.name,
         imagePath: publicUrl,
+        fileType: fileType,
         userId: user?.id || null,
       },
     });

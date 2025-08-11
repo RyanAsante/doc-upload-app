@@ -31,6 +31,18 @@ export default function HomePage() {
             >
               Get started
             </button>
+            <button
+              onClick={() => router.push('/manager/login')}
+              className="text-emerald-600 hover:text-emerald-700 transition-colors"
+            >
+              Manager
+            </button>
+            <button
+              onClick={() => router.push('/admin/login')}
+              className="text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              Admin
+            </button>
           </div>
         </div>
       </nav>
@@ -134,6 +146,12 @@ export default function HomePage() {
               className="border-2 border-white/30 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white/10 transition-all duration-200"
             >
               Admin Access
+            </button>
+            <button
+              onClick={() => router.push('/manager/login')}
+              className="border-2 border-white/30 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white/10 transition-all duration-200"
+            >
+              Manager Access
             </button>
           </div>
         </div>

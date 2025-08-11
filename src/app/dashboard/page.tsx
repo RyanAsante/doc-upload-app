@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 
 interface Upload {
   id: string;
+  title: string | null;
   name: string;
   imagePath: string;
+  fileType: string;
   createdAt: string;
 }
 
@@ -21,6 +23,8 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string>('');
   const router = useRouter();
 
   useEffect(() => {
@@ -74,6 +78,11 @@ export default function DashboardPage() {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const openImageModal = (imagePath: string) => {
+    setSelectedImage(imagePath);
+    setShowImageModal(true);
   };
 
   if (loading) {
@@ -173,19 +182,30 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
               {uploads.map((upload) => (
                 <div key={upload.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="aspect-w-16 aspect-h-9 mb-4">
-                    <img
-                      src={upload.imagePath}
-                      alt={upload.name}
-                      className="w-full h-48 object-cover rounded-lg"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik02MCAxMDBDODAgODAgMTIwIDgwIDE0MCAxMDBDMTYwIDEyMCAxNDAgMTQwIDEyMCAxNDBDMTAwIDE0MCA4MCAxMjAgNjAgMTAwWiIgZmlsbD0iI0QxRDVEM0YiLz4KPC9zdmc+';
-                      }}
-                    />
+                  <div 
+                    className="aspect-w-16 aspect-h-9 mb-4 cursor-pointer"
+                    onClick={() => openImageModal(upload.imagePath)}
+                  >
+                    {upload.fileType === 'VIDEO' ? (
+                      <video
+                        src={upload.imagePath}
+                        className="w-full h-48 object-cover rounded-lg"
+                        controls
+                      />
+                    ) : (
+                      <img
+                        src={upload.imagePath}
+                        alt={upload.title || upload.name}
+                        className="w-full h-48 object-cover rounded-lg"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik02MCAxMDBDODAgODAgMTIwIDgwIDE0MCAxMDBDMTYwIDEyMCAxNDAgMTQwIDEyMCAxNDBDMTAwIDE0MCA4MCAxMjAgNjAgMTAwWiIgZmlsbD0iI0QxRDVEM0YiLz4KPC9zdmc+';
+                        }}
+                      />
+                    )}
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900 truncate">{upload.name}</h3>
+                    <h3 className="font-medium text-gray-900 truncate">{upload.title || upload.name}</h3>
                     <p className="text-sm text-gray-500 mt-1">
                       {formatDate(upload.createdAt)}
                     </p>
@@ -196,6 +216,23 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Image Modal */}
+      {showImageModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowImageModal(false)}
+        >
+          <div className="max-w-4xl max-h-full">
+            <img
+              src={selectedImage}
+              alt="Full size"
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
