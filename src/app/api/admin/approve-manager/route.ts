@@ -3,9 +3,9 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, action, adminId } = await req.json();
+    const { applicationId, action, adminId } = await req.json();
 
-    if (!userId || !action || !adminId) {
+    if (!applicationId || !action || !adminId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -13,56 +13,67 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-      },
+    const application = await prisma.managerApplication.findUnique({
+      where: { id: applicationId },
     });
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (!application) {
+      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
-
-    if (user.role !== 'MANAGER') {
-      return NextResponse.json({ error: 'User is not a manager' }, { status: 400 });
-    }
-
-    // Update user status
-    const updateData: {
-      status: 'APPROVED' | 'REJECTED';
-      approvedAt?: Date;
-      approvedBy?: string;
-    } = {
-      status: action === 'APPROVE' ? 'APPROVED' : 'REJECTED',
-    };
 
     if (action === 'APPROVE') {
-      updateData.approvedAt = new Date();
-      updateData.approvedBy = adminId;
+      // Create the actual manager user
+      const user = await prisma.user.create({
+        data: {
+          name: application.name,
+          email: application.email,
+          password: application.password,
+          role: 'MANAGER',
+          status: 'APPROVED',
+          approvedAt: new Date(),
+          approvedBy: adminId,
+        },
+      });
+
+      // Log the approval
+      await prisma.activityLog.create({
+        data: {
+          userId: adminId,
+          action: 'APPROVE_MANAGER',
+          details: `Approved manager account: ${application.name} (${application.email})`,
+        },
+      });
+
+      // Delete the application
+      await prisma.managerApplication.delete({
+        where: { id: applicationId },
+      });
+
+      return NextResponse.json({ 
+        success: true, 
+        message: `Manager account approved and created successfully` 
+      });
+    } else {
+      // Reject the application
+      await prisma.managerApplication.update({
+        where: { id: applicationId },
+        data: { status: 'REJECTED' },
+      });
+
+      // Log the rejection
+      await prisma.activityLog.create({
+        data: {
+          userId: adminId,
+          action: 'REJECT_MANAGER',
+          details: `Rejected manager application: ${application.name} (${application.email})`,
+        },
+      });
+
+      return NextResponse.json({ 
+        success: true, 
+        message: `Manager application rejected` 
+      });
     }
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-    });
-
-    // Log the action
-    await prisma.activityLog.create({
-      data: {
-        userId: adminId,
-        action: action === 'APPROVE' ? 'APPROVE_MANAGER' : 'REJECT_MANAGER',
-        details: `${action === 'APPROVE' ? 'Approved' : 'Rejected'} manager account: ${user.name} (${user.email})`,
-      },
-    });
-
-    return NextResponse.json({ 
-      success: true, 
-      message: `Manager account ${action.toLowerCase()}d successfully` 
-    });
 
   } catch (error) {
     console.error('Manager approval error:', error);

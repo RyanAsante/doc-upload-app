@@ -6,12 +6,10 @@ export async function POST(req: NextRequest) {
   try {
     const { name, email, password } = await req.json();
 
-    // Validate input
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -20,32 +18,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User already exists' }, { status: 400 });
     }
 
-    // Hash password
+    // Check if there's already a pending application
+    const existingApplication = await prisma.managerApplication.findUnique({
+      where: { email },
+    });
+
+    if (existingApplication) {
+      return NextResponse.json({ error: 'Application already submitted' }, { status: 400 });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create pending manager account
-    const user = await prisma.user.create({
+    // Create a pending application instead of a user
+    await prisma.managerApplication.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        role: 'MANAGER',
         status: 'PENDING',
-      },
-    });
-
-    // Log the registration
-    await prisma.activityLog.create({
-      data: {
-        userId: user.id,
-        action: 'REGISTER',
-        details: `Manager registration: ${name} (${email})`,
       },
     });
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Manager account created successfully. Waiting for admin approval.' 
+      message: 'Manager application submitted successfully. Waiting for admin approval.' 
     });
 
   } catch (error) {

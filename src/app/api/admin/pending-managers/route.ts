@@ -3,9 +3,8 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const pendingManagers = await prisma.user.findMany({
+    const pendingManagers = await prisma.managerApplication.findMany({
       where: {
-        role: 'MANAGER',
         status: 'PENDING',
       },
       select: {

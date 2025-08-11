@@ -4,9 +4,10 @@ import { useRouter } from 'next/navigation';
 
 export default function ManagerLoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,7 +18,7 @@ export default function ManagerLoginPage() {
       const res = await fetch('/api/manager/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
@@ -37,7 +38,7 @@ export default function ManagerLoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center px-6">
       <div className="max-w-md w-full">
-        {/* Logo */}
+        {/* Logo and Header */}
         <div className="text-center mb-8">
           <button
             onClick={() => router.push('/')}
@@ -58,13 +59,27 @@ export default function ManagerLoginPage() {
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-gray-200/50">
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
+              />
+            </div>
+            <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Manager Password
+                Password
               </label>
               <input
                 id="password"
                 type="password"
-                placeholder="Enter manager password"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -110,7 +125,7 @@ export default function ManagerLoginPage() {
                   onClick={() => router.push('/manager/register')}
                   className="text-emerald-600 hover:text-emerald-700 font-medium"
                 >
-                  Register here
+                  Apply here
                 </button>
               </p>
             </div>

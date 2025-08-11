@@ -85,8 +85,8 @@ export default function ManagerRegisterPage() {
               VaultDrop
             </span>
           </button>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Manager Registration</h1>
-          <p className="text-gray-600">Create your manager account (requires admin approval)</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Manager Application</h1>
+          <p className="text-gray-600">Submit your application to become a manager (requires admin approval)</p>
         </div>
 
         {/* Form */}
@@ -163,7 +163,7 @@ export default function ManagerRegisterPage() {
               disabled={loading}
               className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating Account...' : 'Create Manager Account'}
+              {loading ? 'Submitting Application...' : 'Submit Manager Application'}
             </button>
             
             {error && (
@@ -182,12 +182,12 @@ export default function ManagerRegisterPage() {
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Already have an account?{' '}
+              Don&apos;t have a manager account?{' '}
               <button
-                onClick={() => router.push('/manager/login')}
+                onClick={() => router.push('/manager/register')}
                 className="text-emerald-600 hover:text-emerald-700 font-medium"
               >
-                Sign in
+                Apply here
               </button>
             </p>
             <button

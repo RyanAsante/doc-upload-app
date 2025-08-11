@@ -42,6 +42,16 @@ model Upload {
   createdAt DateTime @default(now())
 }
 
+model ManagerApplication {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum UserRole {
   CUSTOMER
   MANAGER    // 👈 New level below admin

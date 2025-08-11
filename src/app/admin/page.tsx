@@ -1,233 +1,359 @@
 'use client';
-
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
-export default function AdminPage() {
-  interface User {
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  uploads: {
     id: string;
+    title: string;
+    name: string;
+    imagePath: string;
+    fileType: string;
+    createdAt: string;
+  }[];
+}
+
+interface ManagerApplication {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+}
+
+interface ActivityLog {
+  id: string;
+  action: string;
+  details: string;
+  createdAt: string;
+  user: {
     name: string;
     email: string;
-  }
+    role: string;
+  };
+}
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState<{ key: keyof User; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
+export default function AdminPage() {
   const router = useRouter();
+  const [users, setUsers] = useState<User[]>([]);
+  const [pendingManagers, setPendingManagers] = useState<ManagerApplication[]>([]);
+  const [managerActivity, setManagerActivity] = useState<ActivityLog[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState<'name' | 'email'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'users' | 'pending' | 'activity'>('users');
 
   useEffect(() => {
-    // Fetch users (authentication is handled by middleware)
-    fetch('/api/admin/users')
-      .then((res) => res.json())
-      .then((data) => {
-        setUsers(data.users);
-        setFilteredUsers(data.users);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+    fetchData();
   }, []);
 
-  // Handle search
-  useEffect(() => {
-    const results = users.filter(user =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredUsers(results);
-  }, [searchTerm, users]);
+  const fetchData = async () => {
+    try {
+      const [usersRes, pendingRes, activityRes] = await Promise.all([
+        fetch('/api/admin/users'),
+        fetch('/api/admin/pending-managers'),
+        fetch('/api/admin/manager-activity')
+      ]);
 
-  // Handle sorting
-  const handleSort = (key: keyof User) => {
+      if (usersRes.ok) {
+        const usersData = await usersRes.json();
+        setUsers(usersData.users);
+      }
+
+      if (pendingRes.ok) {
+        const pendingData = await pendingRes.json();
+        setPendingManagers(pendingData.pendingManagers);
+      }
+
+      if (activityRes.ok) {
+        const activityData = await activityRes.json();
+        setManagerActivity(activityData.managerActivity);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSort = (field: 'name' | 'email') => {
     let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+    if (sortField === field && sortDirection === 'asc') {
       direction = 'desc';
     }
-    setSortConfig({ key, direction });
+    setSortField(field);
+    setSortDirection(direction);
 
-    const sorted = [...filteredUsers].sort((a, b) => {
-      if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
-      if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
-      return 0;
+    const sortedUsers = [...users].sort((a, b) => {
+      const aValue = a[field].toLowerCase();
+      const bValue = b[field].toLowerCase();
+      if (direction === 'asc') {
+        return aValue.localeCompare(bValue);
+      } else {
+        return bValue.localeCompare(aValue);
+      }
     });
-    setFilteredUsers(sorted);
+    setUsers(sortedUsers);
   };
+
+  const handleApproveManager = async (applicationId: string, action: 'APPROVE' | 'REJECT') => {
+    try {
+      const response = await fetch('/api/admin/approve-manager', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          applicationId,
+          action,
+          adminId: 'admin', // You might want to get the actual admin ID
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh the data
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Error approving manager:', error);
+    }
+  };
+
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50/50">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="flex flex-col items-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <p className="mt-4 text-gray-600">Loading user data...</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading admin dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+      <div className="bg-white/70 backdrop-blur-sm border-b border-gray-200/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => router.push('/')}
-                className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+                className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
               >
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-lg">V</span>
                 </div>
-                <div>
-                  <h1 className="text-xl font-semibold text-gray-900">VaultDrop Admin</h1>
-                  <p className="text-sm text-gray-500">Manage user accounts and uploads</p>
-                </div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                  VaultDrop
+                </span>
               </button>
+              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
             </div>
             <button
-              onClick={async () => {
-                await fetch('/api/admin/logout', { method: 'POST' });
-                router.push('/admin/login');
-              }}
-              className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              onClick={() => router.push('/admin/logout')}
+              className="bg-red-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-red-700 transition-all duration-200"
             >
-              Sign out
+              Logout
             </button>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search and Stats */}
-        <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="md:col-span-2">
-            <div className="relative">
+      {/* Tab Navigation */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex space-x-1 bg-white/50 rounded-xl p-1 mb-6">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 ${
+              activeTab === 'users'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Users ({users.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 ${
+              activeTab === 'pending'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Pending Managers ({pendingManagers.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('activity')}
+            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 ${
+              activeTab === 'activity'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Manager Activity
+          </button>
+        </div>
+
+        {/* Users Tab */}
+        {activeTab === 'users' && (
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50">
+            <div className="mb-6">
               <input
                 type="text"
                 placeholder="Search users by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
               />
-              <svg
-                className="absolute right-3 top-3.5 h-5 w-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
             </div>
-          </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50">
-            <div className="flex items-center">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{users.length}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50">
-            <div className="flex items-center">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <svg className="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Active Today</p>
-                <p className="text-2xl font-bold text-gray-900">{users.length}</p>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* User Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
-                    onClick={() => handleSort('name')}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <span>Name</span>
-                      {sortConfig.key === 'name' && (
-                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
-                    onClick={() => handleSort('email')}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <span>Email</span>
-                      {sortConfig.key === 'email' && (
-                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                      )}
-                    </div>
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredUsers.map((user: { id: string; name: string; email: string; }) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{user.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link 
-                        href={`/admin/${user.id}`}
-                        className="text-blue-600 hover:text-blue-800 font-semibold"
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      <button
+                        onClick={() => handleSort('name')}
+                        className="flex items-center space-x-1 hover:text-emerald-600 transition-colors"
                       >
-                        View Details →
-                      </Link>
-                    </td>
+                        <span>Name</span>
+                        {sortField === 'name' && (
+                          <span className="text-emerald-600">
+                            {sortDirection === 'asc' ? '↑' : '↓'}
+                          </span>
+                        )}
+                      </button>
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      <button
+                        onClick={() => handleSort('email')}
+                        className="flex items-center space-x-1 hover:text-emerald-600 transition-colors"
+                      >
+                        <span>Email</span>
+                        {sortField === 'email' && (
+                          <span className="text-emerald-600">
+                            {sortDirection === 'asc' ? '↑' : '↓'}
+                          </span>
+                        )}
+                      </button>
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Role</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Uploads</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {filteredUsers.length === 0 && (
-            <div className="text-center py-12">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No users found</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Try adjusting your search terms.
-              </p>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((user) => (
+                    <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                      <td className="py-3 px-4 text-gray-900">{user.name}</td>
+                      <td className="py-3 px-4 text-gray-600">{user.email}</td>
+                      <td className="py-3 px-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                          user.role === 'MANAGER' ? 'bg-blue-100 text-blue-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-gray-600">{user.uploads.length}</td>
+                      <td className="py-3 px-4">
+                        <button
+                          onClick={() => router.push(`/admin/${user.id}`)}
+                          className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-all duration-200"
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Pending Managers Tab */}
+        {activeTab === 'pending' && (
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Pending Manager Applications</h2>
+            {pendingManagers.length === 0 ? (
+              <p className="text-gray-600 text-center py-8">No pending manager applications</p>
+            ) : (
+              <div className="space-y-4">
+                {pendingManagers.map((application) => (
+                  <div key={application.id} className="border border-gray-200 rounded-xl p-4 bg-white/50">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{application.name}</h3>
+                        <p className="text-gray-600">{application.email}</p>
+                        <p className="text-sm text-gray-500">
+                          Applied: {new Date(application.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleApproveManager(application.id, 'APPROVE')}
+                          className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-all duration-200"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleApproveManager(application.id, 'REJECT')}
+                          className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-all duration-200"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Manager Activity Tab */}
+        {activeTab === 'activity' && (
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Manager Activity Logs</h2>
+            {managerActivity.length === 0 ? (
+              <p className="text-gray-600 text-center py-8">No manager activity found</p>
+            ) : (
+              <div className="space-y-4">
+                {managerActivity.map((log) => (
+                  <div key={log.id} className="border border-gray-200 rounded-xl p-4 bg-white/50">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{log.user.name}</h3>
+                        <p className="text-gray-600">{log.user.email}</p>
+                        <p className="text-gray-800 mt-1">{log.details}</p>
+                        <p className="text-sm text-gray-500 mt-2">
+                          {new Date(log.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        log.action.includes('UPLOAD') ? 'bg-blue-100 text-blue-800' :
+                        log.action.includes('DELETE') ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {log.action}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
