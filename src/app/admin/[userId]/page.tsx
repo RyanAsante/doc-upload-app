@@ -25,6 +25,7 @@ export default function AdminUserPage() {
   const [uploadStatus, setUploadStatus] = useState('');
   const [cameraOn, setCameraOn] = useState(false);
   const [cameraStarting, setCameraStarting] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -44,15 +45,35 @@ export default function AdminUserPage() {
     }
   }, [userId]);
 
+  // Ensure video element is properly initialized
+  useEffect(() => {
+    if (videoRef.current) {
+      console.log('Video element initialized:', videoRef.current);
+      setVideoReady(true);
+    }
+  }, []);
+
   const startCamera = async () => {
     try {
       setCameraStarting(true);
       setUploadStatus('Starting camera...');
       
+      // Check if video element is ready
+      if (!videoReady || !videoRef.current) {
+        console.error('Video not ready, waiting for element...');
+        // Wait for video element to be ready
+        await new Promise(resolve => setTimeout(resolve, 500));
+        if (!videoRef.current) {
+          throw new Error('Video element not ready. Please refresh the page and try again.');
+        }
+      }
+      
       // Check if camera is supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Camera not supported in this browser');
       }
+      
+      console.log('Video element found:', videoRef.current);
       
       // Request camera access
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -64,56 +85,52 @@ export default function AdminUserPage() {
       
       console.log('Camera stream obtained:', stream);
       
-      if (videoRef.current) {
-        const video = videoRef.current;
+      const video = videoRef.current;
+      
+      // Set the stream as the video source
+      video.srcObject = stream;
+      
+      // Ensure video is visible
+      video.style.display = 'block';
+      video.style.backgroundColor = '#000';
+      
+      // Wait for video to be ready
+      video.onloadedmetadata = () => {
+        console.log('Video metadata loaded, dimensions:', video.videoWidth, 'x', video.videoHeight);
         
-        // Set the stream as the video source
-        video.srcObject = stream;
-        
-        // Ensure video is visible
-        video.style.display = 'block';
-        video.style.backgroundColor = '#000';
-        
-        // Wait for video to be ready
-        video.onloadedmetadata = () => {
-          console.log('Video metadata loaded, dimensions:', video.videoWidth, 'x', video.videoHeight);
-          
-          // Force video to play
-          video.play().then(() => {
-            console.log('Video playing successfully');
-            setCameraOn(true);
-            setCameraStarting(false);
-            setUploadStatus('Camera ready! Position document in view.');
-            
-            // Clear status after 3 seconds
-            setTimeout(() => setUploadStatus(''), 3000);
-          }).catch((err) => {
-            console.error('Error playing video:', err);
-            setCameraStarting(false);
-            setUploadStatus('Error playing video. Please try again.');
-          });
-        };
-        
-        // Handle video errors
-        video.onerror = (err) => {
-          console.error('Video error:', err);
+        // Force video to play
+        video.play().then(() => {
+          console.log('Video playing successfully');
+          setCameraOn(true);
           setCameraStarting(false);
-          setUploadStatus('Camera error. Please try again.');
-        };
-        
-        // Handle video load start
-        video.onloadstart = () => {
-          console.log('Video load started');
-        };
-        
-        // Handle video can play
-        video.oncanplay = () => {
-          console.log('Video can play');
-        };
-        
-      } else {
-        throw new Error('Video element not found');
-      }
+          setUploadStatus('Camera ready! Position document in view.');
+          
+          // Clear status after 3 seconds
+          setTimeout(() => setUploadStatus(''), 3000);
+        }).catch((err) => {
+          console.error('Error playing video:', err);
+          setCameraStarting(false);
+          setUploadStatus('Error playing video. Please try again.');
+        });
+      };
+      
+      // Handle video errors
+      video.onerror = (err) => {
+        console.error('Video error:', err);
+        setCameraStarting(false);
+        setUploadStatus('Camera error. Please try again.');
+      };
+      
+      // Handle video load start
+      video.onloadstart = () => {
+        console.log('Video load started');
+      };
+      
+      // Handle video can play
+      video.oncanplay = () => {
+        console.log('Video can play');
+      };
+      
     } catch (err) {
       console.error('Camera access error:', err);
       setCameraStarting(false);
@@ -316,9 +333,9 @@ export default function AdminUserPage() {
             {!cameraOn ? (
               <button
                 onClick={startCamera}
-                disabled={cameraStarting}
+                disabled={cameraStarting || !videoReady}
                 className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
-                  cameraStarting 
+                  cameraStarting || !videoReady
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-green-600 hover:bg-green-700 text-white'
                 }`}
@@ -328,11 +345,16 @@ export default function AdminUserPage() {
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                     <span>Starting Camera...</span>
                   </>
+                ) : !videoReady ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
+                    <span>Initializing...</span>
+                  </>
                 ) : (
                   <>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     <span>Open Camera</span>
                   </>
