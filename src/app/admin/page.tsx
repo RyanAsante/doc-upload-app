@@ -1,4 +1,5 @@
 'use client';
+// Updated admin dashboard with new manager application system
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
