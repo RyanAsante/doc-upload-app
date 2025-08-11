@@ -498,20 +498,45 @@ export default function AdminUserPage() {
           {/* File Upload Section */}
           <div className="border-t pt-6">
             <h3 className="text-lg font-medium text-gray-900 mb-3">📁 File Upload</h3>
-            <div className="flex items-center space-x-4">
-              <input
-                type="file"
-                onChange={handleFileUpload}
-                disabled={uploading}
-                accept="image/*,.pdf,.doc,.docx,video/*"
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-              {uploading && (
-                <div className="flex items-center space-x-2 text-blue-600">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                  <span>Uploading...</span>
-                </div>
-              )}
+            
+            {/* Video Upload Section */}
+            <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h4 className="text-sm font-medium text-blue-900 mb-2">🎥 Video Upload</h4>
+              <div className="flex items-center space-x-4">
+                <input
+                  type="file"
+                  onChange={handleFileUpload}
+                  disabled={uploading}
+                  accept="video/*"
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                {uploading && (
+                  <div className="flex items-center space-x-2 text-blue-600">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    <span>Uploading...</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Document Upload Section */}
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">📄 Document Upload</h4>
+              <div className="flex items-center space-x-4">
+                <input
+                  type="file"
+                  onChange={handleFileUpload}
+                  disabled={uploading}
+                  accept="image/*,.pdf,.doc,.docx"
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
+                />
+                {uploading && (
+                  <div className="flex items-center space-x-2 text-gray-600">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                    <span>Uploading...</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -574,7 +599,7 @@ export default function AdminUserPage() {
                           type="text"
                           value={editingTitle}
                           onChange={(e) => setEditingTitle(e.target.value)}
-                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded text-gray-900 placeholder-gray-400"
                           placeholder="Enter title..."
                         />
                         <div className="flex gap-2 mt-2">
