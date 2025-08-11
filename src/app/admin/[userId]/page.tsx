@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 type User = {
@@ -23,6 +23,10 @@ export default function AdminUserPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
+  const [cameraOn, setCameraOn] = useState(false);
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (userId) {
@@ -39,15 +43,63 @@ export default function AdminUserPage() {
     }
   }, [userId]);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user) return;
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setCameraOn(true);
+      }
+    } catch (error) {
+      setUploadStatus('Camera access denied. Please use file upload instead.');
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      setCameraOn(false);
+    }
+  };
+
+  const captureImage = () => {
+    if (videoRef.current && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      const context = canvas.getContext('2d');
+      
+      if (context) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], `captured_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            handleFileUpload(file);
+          }
+        }, 'image/jpeg');
+      }
+    }
+  };
+
+  const handleFileUpload = async (file: File | React.ChangeEvent<HTMLInputElement>) => {
+    let selectedFile: File | undefined;
+    
+    if (file instanceof File) {
+      selectedFile = file;
+    } else {
+      selectedFile = file.target.files?.[0];
+    }
+
+    if (!selectedFile || !user) return;
 
     setUploading(true);
     setUploadStatus('Uploading file...');
 
     const formData = new FormData();
-    formData.append('document', file);
+    formData.append('document', selectedFile);
 
     try {
       const response = await fetch('/api/upload', {
@@ -189,21 +241,75 @@ export default function AdminUserPage() {
         {/* File Upload Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Document for {user.name}</h2>
-          <div className="flex items-center space-x-4">
-            <input
-              type="file"
-              onChange={handleFileUpload}
-              disabled={uploading}
-              accept="image/*,.pdf,.doc,.docx"
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
-            {uploading && (
-              <div className="flex items-center space-x-2 text-blue-600">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                <span>Uploading...</span>
+          
+          {/* Camera Section */}
+          <div className="mb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">📷 Quick Camera Capture</h3>
+            {!cameraOn ? (
+              <button
+                onClick={startCamera}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Open Camera</span>
+              </button>
+            ) : (
+              <div className="space-y-4">
+                <video 
+                  ref={videoRef} 
+                  className="w-full max-w-md rounded-lg border border-gray-300" 
+                  autoPlay
+                  playsInline
+                  muted
+                />
+                <canvas ref={canvasRef} hidden />
+                <div className="flex gap-3">
+                  <button
+                    onClick={captureImage}
+                    className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    </svg>
+                    <span>Capture & Upload</span>
+                  </button>
+                  <button
+                    onClick={stopCamera}
+                    className="bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span>Close Camera</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
+
+          {/* File Upload Section */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">📁 File Upload</h3>
+            <div className="flex items-center space-x-4">
+              <input
+                type="file"
+                onChange={handleFileUpload}
+                disabled={uploading}
+                accept="image/*,.pdf,.doc,.docx"
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              {uploading && (
+                <div className="flex items-center space-x-2 text-blue-600">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span>Uploading...</span>
+                </div>
+              )}
+            </div>
+          </div>
+
           {uploadStatus && (
             <div className={`mt-3 p-3 rounded-lg ${
               uploadStatus.includes('successfully') 
