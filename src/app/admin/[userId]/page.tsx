@@ -48,26 +48,43 @@ export default function AdminUserPage() {
     try {
       setCameraStarting(true);
       setUploadStatus('Starting camera...');
+      
+      // Request camera access with simpler constraints
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: 'environment' // Use back camera if available
-        } 
+        video: true 
       });
       
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play();
-          setCameraOn(true);
+        const video = videoRef.current;
+        video.srcObject = stream;
+        
+        // Wait for video to be ready
+        video.onloadedmetadata = () => {
+          console.log('Video metadata loaded, attempting to play...');
+          video.play().then(() => {
+            setCameraOn(true);
+            setCameraStarting(false);
+            setUploadStatus('Camera ready! Position document in view.');
+            console.log('Camera started successfully');
+            console.log('Video element:', video);
+            console.log('Video srcObject:', video.srcObject);
+            // Clear status after 3 seconds
+            setTimeout(() => setUploadStatus(''), 3000);
+          }).catch((err) => {
+            console.error('Error playing video:', err);
+            setCameraStarting(false);
+            setUploadStatus('Error starting camera. Please try again.');
+          });
+        };
+        
+        video.onerror = (err) => {
+          console.error('Video error:', err);
           setCameraStarting(false);
-          setUploadStatus('Camera ready! Position document in view.');
-          // Clear status after 3 seconds
-          setTimeout(() => setUploadStatus(''), 3000);
+          setUploadStatus('Camera error. Please try again.');
         };
       }
-    } catch {
+    } catch (err) {
+      console.error('Camera access error:', err);
       setCameraStarting(false);
       setUploadStatus('Camera access denied. Please use file upload instead.');
       // Clear status after 5 seconds
@@ -300,9 +317,14 @@ export default function AdminUserPage() {
                     autoPlay
                     playsInline
                     muted
+                    style={{ minHeight: '256px' }}
                   />
                   <div className="mt-2 text-center text-sm text-gray-500">
                     Camera is active - position document in view
+                  </div>
+                  {/* Debug info */}
+                  <div className="mt-2 text-xs text-gray-400 text-center">
+                    Video element should show camera feed above
                   </div>
                 </div>
                 
