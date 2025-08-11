@@ -14,7 +14,21 @@ model User {
   email    String    @unique
   password String
   role     UserRole  @default(CUSTOMER)
+  status   UserStatus @default(PENDING) // 👈 Pending, Approved, Rejected
   uploads  Upload[]  // 👈 Relation back to Upload
+  activityLogs ActivityLog[] // 👈 Relation to activity logs
+  createdAt DateTime @default(now())
+  approvedAt DateTime?
+  approvedBy String?
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String   // 👈 "UPLOAD", "DELETE", "APPROVE", "REJECT"
+  details   String   // 👈 Description of the action
+  createdAt DateTime @default(now())
 }
 
 model Upload {
@@ -32,6 +46,12 @@ enum UserRole {
   CUSTOMER
   MANAGER    // 👈 New level below admin
   ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum FileType {

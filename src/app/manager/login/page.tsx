@@ -51,7 +51,7 @@ export default function ManagerLoginPage() {
             </span>
           </button>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Manager Access</h1>
-          <p className="text-gray-600">Enter your manager password to continue</p>
+          <p className="text-gray-600">Sign in with your approved manager account</p>
         </div>
 
         {/* Form */}
@@ -103,6 +103,17 @@ export default function ManagerLoginPage() {
                 Back to Home
               </button>
             </p>
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-gray-600 text-sm">
+                Don&apos;t have a manager account?{' '}
+                <button
+                  onClick={() => router.push('/manager/register')}
+                  className="text-emerald-600 hover:text-emerald-700 font-medium"
+                >
+                  Register here
+                </button>
+              </p>
+            </div>
           </div>
         </div>
       </div>

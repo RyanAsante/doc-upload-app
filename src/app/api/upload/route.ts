@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     // Determine file type
     const fileType = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
     
-    await prisma.upload.create({
+    const upload = await prisma.upload.create({
       data: {
         name: file.name,
         imagePath: publicUrl,
@@ -65,6 +65,17 @@ export async function POST(req: NextRequest) {
         userId: user?.id || null,
       },
     });
+
+    // Log the upload activity
+    if (user?.id) {
+      await prisma.activityLog.create({
+        data: {
+          userId: user.id,
+          action: 'UPLOAD',
+          details: `Uploaded ${fileType.toLowerCase()}: ${file.name}`,
+        },
+      });
+    }
 
     console.log('✅ Upload successful:', newFileName);
     return NextResponse.json({ message: 'Upload success' }, { status: 200 });

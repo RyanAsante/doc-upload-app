@@ -8,10 +8,31 @@ export async function DELETE(
   try {
     const { uploadId } = await params;
     
+    // Get upload details before deletion for logging
+    const upload = await prisma.upload.findUnique({
+      where: { id: uploadId },
+      include: { user: true },
+    });
+    
+    if (!upload) {
+      return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
+    }
+    
     // Delete the upload
     await prisma.upload.delete({
       where: { id: uploadId },
     });
+    
+    // Log the deletion activity
+    if (upload.userId) {
+      await prisma.activityLog.create({
+        data: {
+          userId: upload.userId,
+          action: 'DELETE',
+          details: `Deleted ${upload.fileType.toLowerCase()}: ${upload.name}`,
+        },
+      });
+    }
     
     return NextResponse.json({ success: true, message: 'Upload deleted successfully' });
   } catch (error) {

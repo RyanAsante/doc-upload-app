@@ -148,10 +148,10 @@ export default function HomePage() {
               Admin Access
             </button>
             <button
-              onClick={() => router.push('/manager/login')}
+              onClick={() => router.push('/manager/register')}
               className="border-2 border-white/30 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white/10 transition-all duration-200"
             >
-              Manager Access
+              Become a Manager
             </button>
           </div>
         </div>
