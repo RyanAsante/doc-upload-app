@@ -49,44 +49,75 @@ export default function AdminUserPage() {
       setCameraStarting(true);
       setUploadStatus('Starting camera...');
       
-      // Request camera access with simpler constraints
+      // Check if camera is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported in this browser');
+      }
+      
+      // Request camera access
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true 
+        video: {
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        } 
       });
+      
+      console.log('Camera stream obtained:', stream);
       
       if (videoRef.current) {
         const video = videoRef.current;
+        
+        // Set the stream as the video source
         video.srcObject = stream;
+        
+        // Ensure video is visible
+        video.style.display = 'block';
+        video.style.backgroundColor = '#000';
         
         // Wait for video to be ready
         video.onloadedmetadata = () => {
-          console.log('Video metadata loaded, attempting to play...');
+          console.log('Video metadata loaded, dimensions:', video.videoWidth, 'x', video.videoHeight);
+          
+          // Force video to play
           video.play().then(() => {
+            console.log('Video playing successfully');
             setCameraOn(true);
             setCameraStarting(false);
             setUploadStatus('Camera ready! Position document in view.');
-            console.log('Camera started successfully');
-            console.log('Video element:', video);
-            console.log('Video srcObject:', video.srcObject);
+            
             // Clear status after 3 seconds
             setTimeout(() => setUploadStatus(''), 3000);
           }).catch((err) => {
             console.error('Error playing video:', err);
             setCameraStarting(false);
-            setUploadStatus('Error starting camera. Please try again.');
+            setUploadStatus('Error playing video. Please try again.');
           });
         };
         
+        // Handle video errors
         video.onerror = (err) => {
           console.error('Video error:', err);
           setCameraStarting(false);
           setUploadStatus('Camera error. Please try again.');
         };
+        
+        // Handle video load start
+        video.onloadstart = () => {
+          console.log('Video load started');
+        };
+        
+        // Handle video can play
+        video.oncanplay = () => {
+          console.log('Video can play');
+        };
+        
+      } else {
+        throw new Error('Video element not found');
       }
     } catch (err) {
       console.error('Camera access error:', err);
       setCameraStarting(false);
-      setUploadStatus('Camera access denied. Please use file upload instead.');
+      setUploadStatus(`Camera error: ${err instanceof Error ? err.message : 'Unknown error'}. Please use file upload instead.`);
       // Clear status after 5 seconds
       setTimeout(() => setUploadStatus(''), 5000);
     }
@@ -313,11 +344,11 @@ export default function AdminUserPage() {
                 <div className="bg-gray-100 rounded-xl p-4 border-2 border-dashed border-gray-300">
                   <video 
                     ref={videoRef} 
-                    className="w-full h-64 object-cover rounded-lg border border-gray-300 bg-gray-200" 
+                    className="w-full h-64 object-cover rounded-lg border border-gray-300 bg-black" 
                     autoPlay
                     playsInline
                     muted
-                    style={{ minHeight: '256px' }}
+                    style={{ minHeight: '256px', display: 'block' }}
                   />
                   <div className="mt-2 text-center text-sm text-gray-500">
                     Camera is active - position document in view

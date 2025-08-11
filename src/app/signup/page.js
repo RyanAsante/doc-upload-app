@@ -44,12 +44,12 @@ export default function SignupPage() {
         <div className="text-center mb-8">
           <button
             onClick={() => router.push('/')}
-            className="flex items-center justify-center space-x-2 mb-4 hover:opacity-80 transition-opacity"
+            className="flex items-center justify-center space-x-2 mb-4 hover:opacity-80 transition-opacity mx-auto"
           >
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold text-lg">V</span>
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
               VaultDrop
             </span>
           </button>
