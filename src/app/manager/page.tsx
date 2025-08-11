@@ -37,7 +37,7 @@ export default function ManagerPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/admin/users');
+      const response = await fetch('/api/manager/users');
       const data = await response.json();
       setUsers(data.users);
       setLoading(false);
