@@ -28,21 +28,28 @@ export default function AdminPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    console.log('Admin page mounted, fetching users...');
     fetchUsers();
   }, []);
 
   const fetchUsers = async () => {
     try {
+      console.log('Fetching users from /api/admin/users...');
       const response = await fetch('/api/admin/users');
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
-        setUsers(data.users);
+        console.log('Users data received:', data);
+        setUsers(data.users || []);
       } else {
-        setError('Failed to fetch users');
+        const errorData = await response.text();
+        console.error('Error response:', errorData);
+        setError(`Failed to fetch users: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
-      setError('Error fetching users');
+      setError(`Error fetching users: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -209,6 +216,12 @@ export default function AdminPage() {
               </tbody>
             </table>
           </div>
+          
+          {filteredUsers.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-gray-600">No users found</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
