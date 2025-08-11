@@ -25,7 +25,6 @@ export default function AdminUserPage() {
   const [uploadStatus, setUploadStatus] = useState('');
   const [cameraOn, setCameraOn] = useState(false);
   const [cameraStarting, setCameraStarting] = useState(false);
-  const [videoReady, setVideoReady] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -45,26 +44,20 @@ export default function AdminUserPage() {
     }
   }, [userId]);
 
-  // Ensure video element is properly initialized
-  useEffect(() => {
-    if (videoRef.current) {
-      console.log('Video element initialized:', videoRef.current);
-      setVideoReady(true);
-    }
-  }, []);
+
 
   const startCamera = async () => {
     try {
       setCameraStarting(true);
       setUploadStatus('Starting camera...');
       
-      // Check if video element is ready
-      if (!videoReady || !videoRef.current) {
-        console.error('Video not ready, waiting for element...');
+      // Check if video element exists
+      if (!videoRef.current) {
+        console.error('Video element not found, waiting for element...');
         // Wait for video element to be ready
         await new Promise(resolve => setTimeout(resolve, 500));
         if (!videoRef.current) {
-          throw new Error('Video element not ready. Please refresh the page and try again.');
+          throw new Error('Video element not found. Please refresh the page and try again.');
         }
       }
       
@@ -333,9 +326,9 @@ export default function AdminUserPage() {
             {!cameraOn ? (
               <button
                 onClick={startCamera}
-                disabled={cameraStarting || !videoReady}
+                disabled={cameraStarting}
                 className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
-                  cameraStarting || !videoReady
+                  cameraStarting
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-green-600 hover:bg-green-700 text-white'
                 }`}
@@ -344,11 +337,6 @@ export default function AdminUserPage() {
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                     <span>Starting Camera...</span>
-                  </>
-                ) : !videoReady ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
-                    <span>Initializing...</span>
                   </>
                 ) : (
                   <>
