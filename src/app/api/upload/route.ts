@@ -5,11 +5,14 @@ import { supabase } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('🚀 Upload API called');
+    
     // Get the form data
     const formData = await req.formData();
     const file = formData.get('document') as File;
 
     if (!file) {
+      console.log('❌ No file found in form data');
       return NextResponse.json({ message: 'Missing file' }, { status: 400 });
     }
 
@@ -49,10 +52,13 @@ export async function POST(req: NextRequest) {
     const publicUrl = signedUrlData.signedUrl;
 
     const userEmail = req.headers.get('x-user-email') || 'unknown@example.com';
+    console.log('👤 User email from header:', userEmail);
 
     const user = await prisma.user.findUnique({
       where: { email: userEmail },
     });
+    
+    console.log('🔍 User lookup result:', user ? { id: user.id, email: user.email, role: user.role } : 'User not found');
     
     // Determine file type
     const fileType = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
@@ -65,6 +71,8 @@ export async function POST(req: NextRequest) {
         userId: user?.id || null,
       },
     });
+
+    console.log('📁 Upload record created:', upload);
 
     // Log the upload activity
     if (user?.id) {
