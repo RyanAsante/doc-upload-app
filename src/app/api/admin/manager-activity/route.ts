@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    // Get all uploads made by managers
-    const managerUploads = await prisma.upload.findMany({
+    // Get all activity logs from managers
+    const managerActivityLogs = await prisma.activityLog.findMany({
       where: {
         user: {
           role: 'MANAGER',
@@ -21,26 +21,20 @@ export async function GET() {
         },
       },
       orderBy: { createdAt: 'desc' },
-      take: 100, // Limit to last 100 uploads
+      take: 100, // Limit to last 100 activities
     });
 
     // Transform the data to be more readable
-    const managerActivity = managerUploads
-      .filter(upload => upload.user !== null)
-      .map(upload => ({
-        id: upload.id,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        managerName: (upload.user as any).name,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        managerEmail: (upload.user as any).email,
-        fileName: upload.name,
-        title: upload.title,
-        fileType: upload.fileType,
-        uploadedAt: upload.createdAt,
-        action: 'UPLOAD',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        details: `${(upload.user as any).name} uploaded ${upload.fileType.toLowerCase()} "${upload.title || upload.name}" on ${upload.createdAt.toLocaleDateString()}`,
-      }));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const managerActivity = managerActivityLogs.map((log: any) => ({
+      id: log.id,
+      managerName: log.user.name,
+      managerEmail: log.user.email,
+      action: log.action,
+      details: log.details,
+      createdAt: log.createdAt,
+      activityType: 'LOG',
+    }));
 
     return NextResponse.json({ managerActivity });
   } catch (error) {
