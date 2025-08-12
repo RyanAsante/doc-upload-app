@@ -201,7 +201,6 @@ export default function ManagerUserPage() {
     const formData = new FormData();
     formData.append('document', selectedFile);
     formData.append('customerEmail', user.email); // Customer the file is for
-    formData.append('managerEmail', 'manager@example.com'); // TODO: Get actual manager email
 
     try {
       const response = await fetch('/api/manager/upload', {

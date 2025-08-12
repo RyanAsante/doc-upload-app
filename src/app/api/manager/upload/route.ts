@@ -2,30 +2,38 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '@/lib/prisma';
 import { supabase } from '@/lib/supabase';
+import { cookies } from 'next/headers';
 
 export async function POST(req: NextRequest) {
   try {
     console.log('🚀 Manager Upload API called');
     
+    // Check if manager is authenticated
+    const cookieStore = await cookies();
+    const managerAuth = cookieStore.get('manager-auth');
+    
+    if (!managerAuth || managerAuth.value !== 'true') {
+      console.log('❌ Manager not authenticated');
+      return NextResponse.json({ message: 'Manager not authenticated' }, { status: 401 });
+    }
+    
     // Get the form data
     const formData = await req.formData();
     const file = formData.get('document') as File;
     const customerEmail = formData.get('customerEmail') as string;
-    const managerEmail = formData.get('managerEmail') as string;
 
     if (!file) {
       console.log('❌ No file found in form data');
       return NextResponse.json({ message: 'Missing file' }, { status: 400 });
     }
 
-    if (!customerEmail || !managerEmail) {
-      console.log('❌ Missing customer or manager email');
-      return NextResponse.json({ message: 'Missing customer or manager email' }, { status: 400 });
+    if (!customerEmail) {
+      console.log('❌ Missing customer email');
+      return NextResponse.json({ message: 'Missing customer email' }, { status: 400 });
     }
 
     console.log('📦 Uploading file:', file.name, 'Size:', file.size);
     console.log('👤 Customer email:', customerEmail);
-    console.log('👤 Manager email:', managerEmail);
 
     // Convert file to buffer
     const bytes = await file.arrayBuffer();
@@ -65,21 +73,13 @@ export async function POST(req: NextRequest) {
       where: { email: customerEmail },
     });
     
-    // Get the manager (who is doing the upload)
-    const manager = await prisma.user.findUnique({
-      where: { email: managerEmail },
-    });
-    
-    console.log('🔍 Customer lookup result:', customer ? { id: customer.id, email: customer.email, role: customer.role } : 'Customer not found');
-    console.log('🔍 Manager lookup result:', manager ? { id: manager.id, email: manager.email, role: manager.role } : 'Manager not found');
-    
     if (!customer) {
+      console.log('❌ Customer not found:', customerEmail);
       return NextResponse.json({ message: 'Customer not found' }, { status: 404 });
     }
     
-    if (!manager || manager.role !== 'MANAGER') {
-      return NextResponse.json({ message: 'Manager not found or unauthorized' }, { status: 403 });
-    }
+    // For now, let's create a simple activity log without the manager details
+    // We'll fix this by getting the manager's email from the session later
     
     // Determine file type
     const fileType = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
@@ -95,13 +95,13 @@ export async function POST(req: NextRequest) {
 
     console.log('📁 Upload record created:', upload);
 
-    // Log the upload activity for the manager
+    // Create a simple activity log entry
     try {
       const activityLog = await prisma.activityLog.create({
         data: {
-          userId: manager.id, // Log activity for the manager
+          userId: customer.id, // Temporarily use customer ID
           action: 'UPLOAD',
-          details: `Uploaded ${fileType.toLowerCase()} "${file.name}" for customer ${customer.name} (${customer.email})`,
+          details: `File "${file.name}" uploaded by manager for customer ${customer.name} (${customer.email})`,
         },
       });
       console.log('✅ Activity log created successfully:', activityLog);
