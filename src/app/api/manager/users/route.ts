@@ -1,9 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    // Get the manager's email from the request headers or cookies
+    // For now, we'll filter out all MANAGER role users
     const users = await prisma.user.findMany({
+      where: {
+        role: {
+          not: 'MANAGER' // Exclude all managers
+        }
+      },
       select: {
         id: true,
         name: true,

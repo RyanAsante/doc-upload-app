@@ -80,7 +80,7 @@ export default function DashboardPage() {
     });
   };
 
-  const openImageModal = (imagePath: string) => {
+  const openImageModal = (imagePath: string, fileType: string) => {
     setSelectedImage(imagePath);
     setShowImageModal(true);
   };
@@ -184,14 +184,24 @@ export default function DashboardPage() {
                 <div key={upload.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div 
                     className="aspect-w-16 aspect-h-9 mb-4 cursor-pointer"
-                    onClick={() => openImageModal(upload.imagePath)}
+                    onClick={() => openImageModal(upload.imagePath, upload.fileType)}
                   >
                     {upload.fileType === 'VIDEO' ? (
-                      <video
-                        src={upload.imagePath}
-                        className="w-full h-48 object-cover rounded-lg"
-                        controls
-                      />
+                      <div className="relative">
+                        <video
+                          src={upload.imagePath}
+                          className="w-full h-48 object-cover rounded-lg"
+                          controls
+                          preload="metadata"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 rounded-lg">
+                          <div className="bg-white bg-opacity-90 rounded-full p-2">
+                            <svg className="h-6 w-6 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
                     ) : (
                       <img
                         src={upload.imagePath}
@@ -205,10 +215,15 @@ export default function DashboardPage() {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900 truncate">{upload.title || upload.name}</h3>
+                    <h3 className="font-medium text-gray-900 truncate">
+                      {upload.title || upload.name}
+                    </h3>
                     <p className="text-sm text-gray-500 mt-1">
                       {formatDate(upload.createdAt)}
                     </p>
+                    {upload.fileType === 'VIDEO' && (
+                      <p className="text-xs text-blue-600 mt-1">📹 Video</p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -217,19 +232,37 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Image Modal */}
+      {/* Image/Video Modal */}
       {showImageModal && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
           onClick={() => setShowImageModal(false)}
         >
-          <div className="max-w-4xl max-h-full">
-            <img
-              src={selectedImage}
-              alt="Full size"
-              className="max-w-full max-h-full object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
+          <div className="max-w-4xl max-h-full relative">
+            {selectedImage.includes('.mp4') || selectedImage.includes('.mov') || selectedImage.includes('.avi') ? (
+              <video
+                src={selectedImage}
+                className="max-w-full max-h-full object-contain"
+                controls
+                autoPlay
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <img
+                src={selectedImage}
+                alt="Full size"
+                className="max-w-full max-h-full object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute top-4 right-4 bg-white bg-opacity-90 rounded-full p-2 hover:bg-opacity-100 transition-all"
+            >
+              <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
       )}

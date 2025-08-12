@@ -19,8 +19,10 @@ export async function GET(req: NextRequest) {
         uploads: {
           select: {
             id: true,
+            title: true,
             name: true,
             imagePath: true,
+            fileType: true,
             createdAt: true,
           },
           orderBy: {
