@@ -41,10 +41,20 @@ export async function GET() {
     console.log('📋 Sample activity logs:', allActivityLogs);
     
     // Now let's check specifically for manager activity logs
+    // First get all users with MANAGER role
+    const managerUsers = await prisma.user.findMany({
+      where: { role: 'MANAGER' },
+      select: { id: true }
+    });
+    
+    const managerIds = managerUsers.map((user: { id: string }) => user.id);
+    console.log('👥 Manager IDs found:', managerIds);
+    
+    // Get activity logs where userId is in the list of manager IDs
     const managerActivityLogs = await prisma.activityLog.findMany({
       where: {
-        user: {
-          role: 'MANAGER',
+        userId: {
+          in: managerIds
         },
       },
       include: {
