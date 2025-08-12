@@ -9,6 +9,8 @@ export async function DELETE(
     const { uploadId } = await params;
     const { deletedBy } = await req.json();
     
+    console.log('🗑️ DELETE request for upload:', uploadId, 'by user:', deletedBy);
+    
     // Get upload details before deletion for logging
     const upload = await prisma.upload.findUnique({
       where: { id: uploadId },
@@ -19,18 +21,28 @@ export async function DELETE(
       return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
     }
     
+    // Get the user who is performing the deletion
+    let performerUser = null;
+    if (deletedBy) {
+      performerUser = await prisma.user.findUnique({
+        where: { id: deletedBy },
+        select: { id: true, name: true, email: true, role: true }
+      });
+      console.log('👤 Performer user lookup:', performerUser);
+    }
+    
     // Delete the upload
     await prisma.upload.delete({
       where: { id: uploadId },
     });
     
     // Log the deletion activity with the correct user ID
-    if (deletedBy) {
-      console.log('📝 Creating DELETE activity log for user:', deletedBy);
+    if (performerUser) {
+      console.log('📝 Creating DELETE activity log for user:', performerUser.id, 'Role:', performerUser.role);
       try {
         const activityLog = await prisma.activityLog.create({
           data: {
-            userId: deletedBy, // Use the ID of who performed the deletion
+            userId: performerUser.id, // Use the ID of who performed the deletion
             action: 'DELETE',
             details: `Deleted ${upload.fileType.toLowerCase()}: ${upload.name}`,
           },
@@ -40,7 +52,7 @@ export async function DELETE(
         console.error('❌ Failed to create DELETE activity log:', logError);
       }
     } else {
-      console.log('⚠️ No deletedBy provided for DELETE action');
+      console.log('⚠️ No performer user found for DELETE action');
     }
     
     return NextResponse.json({ success: true, message: 'Upload deleted successfully' });
@@ -58,6 +70,8 @@ export async function PATCH(
     const { uploadId } = await params;
     const { title, updatedBy } = await req.json();
     
+    console.log('✏️ PATCH request for upload:', uploadId, 'by user:', updatedBy);
+    
     // Get upload details before update for logging
     const upload = await prisma.upload.findUnique({
       where: { id: uploadId },
@@ -74,13 +88,23 @@ export async function PATCH(
       data: { title },
     });
     
-    // Log the title update activity
+    // Get the user who is performing the update
+    let performerUser = null;
     if (updatedBy) {
-      console.log('📝 Creating TITLE_UPDATE activity log for user:', updatedBy);
+      performerUser = await prisma.user.findUnique({
+        where: { id: updatedBy },
+        select: { id: true, name: true, email: true, role: true }
+      });
+      console.log('👤 Performer user lookup:', performerUser);
+    }
+    
+    // Log the title update activity
+    if (performerUser) {
+      console.log('📝 Creating TITLE_UPDATE activity log for user:', performerUser.id, 'Role:', performerUser.role);
       try {
         const activityLog = await prisma.activityLog.create({
           data: {
-            userId: updatedBy, // Use the ID of who made the change
+            userId: performerUser.id, // Use the ID of who made the change
             action: 'TITLE_UPDATE',
             details: `Updated title of ${upload.fileType.toLowerCase()} "${upload.name}" to "${title}"`,
           },
@@ -90,7 +114,7 @@ export async function PATCH(
         console.error('❌ Failed to create TITLE_UPDATE activity log:', logError);
       }
     } else {
-      console.log('⚠️ No updatedBy provided for TITLE_UPDATE action');
+      console.log('⚠️ No performer user found for TITLE_UPDATE action');
     }
     
     return NextResponse.json({ success: true, upload: updatedUpload });

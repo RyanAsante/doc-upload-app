@@ -9,6 +9,13 @@ export async function GET(
     const { managerId } = await params;
     console.log('🔍 Fetching activity for manager:', managerId);
     
+    // First, let's check what user this managerId corresponds to
+    const managerUser = await prisma.user.findUnique({
+      where: { id: managerId },
+      select: { id: true, name: true, email: true, role: true }
+    });
+    console.log('👤 Manager user lookup:', managerUser);
+    
     // Get all activity logs for this specific manager
     const managerActivityLogs = await prisma.activityLog.findMany({
       where: {
@@ -30,6 +37,12 @@ export async function GET(
 
     console.log('📊 Found activity logs for manager:', managerActivityLogs.length);
     console.log('📋 Sample activity logs:', managerActivityLogs.slice(0, 3));
+    
+    // Let's also check if there are ANY activity logs with this userId
+    const totalLogsForUser = await prisma.activityLog.count({
+      where: { userId: managerId }
+    });
+    console.log('🔢 Total activity logs for this user ID:', totalLogsForUser);
 
     // Transform the data to be more readable
     const managerActivity = managerActivityLogs.map((log) => ({

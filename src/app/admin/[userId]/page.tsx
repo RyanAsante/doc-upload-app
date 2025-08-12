@@ -86,6 +86,21 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
     }
   };
 
+  // Function to get current manager's ID from cookies
+  const getCurrentManagerId = async (): Promise<string | null> => {
+    try {
+      // Check if we're in a manager context by looking for manager cookies
+      const response = await fetch('/api/manager/check-auth');
+      if (response.ok) {
+        const data = await response.json();
+        return data.managerId || null;
+      }
+    } catch (error) {
+      console.error('Error checking manager auth:', error);
+    }
+    return null;
+  };
+
   const startCamera = async () => {
     try {
       // Check if video element exists
@@ -215,11 +230,21 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
 
   const handleDeleteFile = async (uploadId: string) => {
     try {
+      // Get the current manager's ID if we're in a manager context
+      let performerId = user?.id; // Default to current user (customer)
+      
+      if (isManager) {
+        const managerId = await getCurrentManagerId();
+        if (managerId) {
+          performerId = managerId; // Use manager's ID for activity logging
+        }
+      }
+      
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          deletedBy: user?.id // Pass the current user's ID for activity logging
+          deletedBy: performerId // Pass the correct performer ID
         }),
       });
 
@@ -227,8 +252,8 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         setUploads(uploads.filter(upload => upload.id !== uploadId));
         
         // If this is a manager, refresh their activity
-        if (isManager && user) {
-          fetchManagerActivity(user.id);
+        if (isManager && performerId) {
+          fetchManagerActivity(performerId);
         }
       }
     } catch {
@@ -238,12 +263,22 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
 
   const handleUpdateTitle = async (uploadId: string) => {
     try {
+      // Get the current manager's ID if we're in a manager context
+      let performerId = user?.id; // Default to current user (customer)
+      
+      if (isManager) {
+        const managerId = await getCurrentManagerId();
+        if (managerId) {
+          performerId = managerId; // Use manager's ID for activity logging
+        }
+      }
+      
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           title: editingTitle,
-          updatedBy: user?.id // Pass the current user's ID for activity logging
+          updatedBy: performerId // Pass the correct performer ID
         }),
       });
       
@@ -255,8 +290,8 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         setEditingTitle('');
         
         // If this is a manager, refresh their activity
-        if (isManager && user) {
-          fetchManagerActivity(user.id);
+        if (isManager && performerId) {
+          fetchManagerActivity(performerId);
         }
       }
     } catch {
