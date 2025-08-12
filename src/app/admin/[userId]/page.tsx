@@ -28,6 +28,19 @@ interface ManagerActivity {
   managerRole: string;
 }
 
+interface DeleteRequestBody {
+  deletedBy?: string;
+  isManagerAction?: boolean;
+  managerId?: string;
+}
+
+interface UpdateTitleRequestBody {
+  title: string;
+  updatedBy?: string;
+  isManagerAction?: boolean;
+  managerId?: string;
+}
+
 export default function AdminUserPage({ params }: { params: Promise<{ userId: string }> }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -267,43 +280,43 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       const currentUserIsManager = await checkCurrentUserIsManager();
       console.log('👤 Current user is manager:', currentUserIsManager);
       
-      // Get the current manager's ID if we're in a manager context
-      let performerId: string | undefined;
+      let requestBody: DeleteRequestBody = {};
       
       if (currentUserIsManager) {
-        console.log('👤 Manager context detected, getting manager ID...');
+        // If it's a manager, get their ID and pass it explicitly
         const managerId = await getCurrentManagerId();
-        console.log('👤 Manager ID result:', managerId);
-        
         if (managerId) {
-          performerId = managerId; // Use manager's ID for activity logging
-          console.log('✅ Using manager ID for activity logging:', performerId);
+          requestBody = { 
+            deletedBy: managerId,
+            isManagerAction: true,
+            managerId: managerId
+          };
+          console.log('✅ Manager delete - using manager ID:', managerId);
         } else {
           console.log('⚠️ No manager ID found, cannot proceed');
-          return; // Don't proceed if we can't get manager ID
+          return;
         }
       } else {
-        // If not a manager, use the current user's ID (for admin actions)
-        performerId = user?.id;
-        console.log('👤 Admin context, using current user ID:', performerId);
+        // If it's an admin, use the current user ID
+        requestBody = { 
+          deletedBy: user?.id,
+          isManagerAction: false
+        };
+        console.log('👤 Admin delete - using current user ID:', user?.id);
       }
-      
-      console.log('🎯 Final performer ID for delete:', performerId);
       
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          deletedBy: performerId // Pass the correct performer ID
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (response.ok) {
         setUploads(uploads.filter(upload => upload.id !== uploadId));
         
         // If this is a manager, refresh their activity
-        if (currentUserIsManager && performerId) {
-          fetchManagerActivity(performerId);
+        if (currentUserIsManager && requestBody.managerId) {
+          fetchManagerActivity(requestBody.managerId);
         }
       }
     } catch {
@@ -317,36 +330,37 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       const currentUserIsManager = await checkCurrentUserIsManager();
       console.log('👤 Current user is manager for title update:', currentUserIsManager);
       
-      // Get the current manager's ID if we're in a manager context
-      let performerId: string | undefined;
+      let requestBody: UpdateTitleRequestBody = { title: editingTitle };
       
       if (currentUserIsManager) {
-        console.log('👤 Manager context detected for title update, getting manager ID...');
+        // If it's a manager, get their ID and pass it explicitly
         const managerId = await getCurrentManagerId();
-        console.log('👤 Manager ID result for title update:', managerId);
-        
         if (managerId) {
-          performerId = managerId; // Use manager's ID for activity logging
-          console.log('✅ Using manager ID for title update activity logging:', performerId);
+          requestBody = { 
+            title: editingTitle,
+            updatedBy: managerId,
+            isManagerAction: true,
+            managerId: managerId
+          };
+          console.log('✅ Manager title update - using manager ID:', managerId);
         } else {
-          console.log('⚠️ No manager ID found for title update, cannot proceed');
-          return; // Don't proceed if we can't get manager ID
+          console.log('⚠️ No manager ID found, cannot proceed');
+          return;
         }
       } else {
-        // If not a manager, use the current user's ID (for admin actions)
-        performerId = user?.id;
-        console.log('👤 Admin context for title update, using current user ID:', performerId);
+        // If it's an admin, use the current user ID
+        requestBody = { 
+          title: editingTitle,
+          updatedBy: user?.id,
+          isManagerAction: false
+        };
+        console.log('👤 Admin title update - using current user ID:', user?.id);
       }
-      
-      console.log('🎯 Final performer ID for title update:', performerId);
       
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          title: editingTitle,
-          updatedBy: performerId // Pass the correct performer ID
-        }),
+        body: JSON.stringify(requestBody),
       });
       
       if (response.ok) {
@@ -357,8 +371,8 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         setEditingTitle('');
         
         // If this is a manager, refresh their activity
-        if (currentUserIsManager && performerId) {
-          fetchManagerActivity(performerId);
+        if (currentUserIsManager && requestBody.managerId) {
+          fetchManagerActivity(requestBody.managerId);
         }
       }
     } catch {
