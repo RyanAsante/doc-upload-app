@@ -5,6 +5,8 @@ export async function POST(req: NextRequest) {
   try {
     const { applicationId, action, adminId } = await req.json();
 
+    console.log('Approval request:', { applicationId, action, adminId });
+
     if (!applicationId || !action || !adminId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
@@ -13,6 +15,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
+    // Find the application
     const application = await prisma.managerApplication.findUnique({
       where: { id: applicationId },
     });
@@ -21,62 +24,68 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
+    console.log('Found application:', application);
+
     if (action === 'APPROVE') {
-      // Create the actual manager user
-      const user = await prisma.user.create({
-        data: {
-          name: application.name,
-          email: application.email,
-          password: application.password,
-          role: 'MANAGER',
-          status: 'APPROVED',
-          approvedAt: new Date(),
-          approvedBy: adminId,
-        },
-      });
+      try {
+        // Create the actual manager user
+        const user = await prisma.user.create({
+          data: {
+            name: application.name,
+            email: application.email,
+            password: application.password,
+            role: 'MANAGER',
+            status: 'APPROVED',
+            approvedAt: new Date(),
+            approvedBy: adminId,
+          },
+        });
 
-      // Log the approval
-      await prisma.activityLog.create({
-        data: {
-          userId: adminId,
-          action: 'APPROVE_MANAGER',
-          details: `Approved manager account: ${application.name} (${application.email})`,
-        },
-      });
+        console.log('Created manager user:', user);
 
-      // Delete the application
-      await prisma.managerApplication.delete({
-        where: { id: applicationId },
-      });
+        // Delete the application
+        await prisma.managerApplication.delete({
+          where: { id: applicationId },
+        });
 
-      return NextResponse.json({ 
-        success: true, 
-        message: `Manager account approved and created successfully` 
-      });
+        console.log('Application deleted');
+
+        return NextResponse.json({ 
+          success: true, 
+          message: `Manager account approved and created successfully` 
+        });
+      } catch (createError) {
+        console.error('Error creating manager user:', createError);
+        return NextResponse.json({ 
+          error: `Failed to create manager user: ${createError instanceof Error ? createError.message : 'Unknown error'}` 
+        }, { status: 500 });
+      }
     } else {
       // Reject the application
-      await prisma.managerApplication.update({
-        where: { id: applicationId },
-        data: { status: 'REJECTED' },
-      });
+      try {
+        await prisma.managerApplication.update({
+          where: { id: applicationId },
+          data: { status: 'REJECTED' },
+        });
 
-      // Log the rejection
-      await prisma.activityLog.create({
-        data: {
-          userId: adminId,
-          action: 'REJECT_MANAGER',
-          details: `Rejected manager application: ${application.name} (${application.email})`,
-        },
-      });
+        console.log('Application rejected');
 
-      return NextResponse.json({ 
-        success: true, 
-        message: `Manager application rejected` 
-      });
+        return NextResponse.json({ 
+          success: true, 
+          message: `Manager application rejected` 
+        });
+      } catch (rejectError) {
+        console.error('Error rejecting application:', rejectError);
+        return NextResponse.json({ 
+          error: `Failed to reject application: ${rejectError instanceof Error ? rejectError.message : 'Unknown error'}` 
+        }, { status: 500 });
+      }
     }
 
   } catch (error) {
     console.error('Manager approval error:', error);
-    return NextResponse.json({ error: 'Action failed' }, { status: 500 });
+    return NextResponse.json({ 
+      error: `Action failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
+    }, { status: 500 });
   }
 }
