@@ -89,14 +89,22 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   // Function to get current manager's ID from cookies
   const getCurrentManagerId = async (): Promise<string | null> => {
     try {
+      console.log('🔍 Getting current manager ID...');
       // Check if we're in a manager context by looking for manager cookies
       const response = await fetch('/api/manager/check-auth');
+      console.log('📡 Manager auth response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('📋 Manager auth data:', data);
         return data.managerId || null;
+      } else {
+        console.log('❌ Manager auth failed:', response.status);
+        const errorData = await response.json();
+        console.log('❌ Manager auth error:', errorData);
       }
     } catch (error) {
-      console.error('Error checking manager auth:', error);
+      console.error('❌ Error checking manager auth:', error);
     }
     return null;
   };
@@ -230,15 +238,27 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
 
   const handleDeleteFile = async (uploadId: string) => {
     try {
+      console.log('🗑️ Delete request - isManager:', isManager, 'user.id:', user?.id);
+      
       // Get the current manager's ID if we're in a manager context
       let performerId = user?.id; // Default to current user (customer)
       
       if (isManager) {
+        console.log('👤 Manager context detected, getting manager ID...');
         const managerId = await getCurrentManagerId();
+        console.log('👤 Manager ID result:', managerId);
+        
         if (managerId) {
           performerId = managerId; // Use manager's ID for activity logging
+          console.log('✅ Using manager ID for activity logging:', performerId);
+        } else {
+          console.log('⚠️ No manager ID found, using default:', performerId);
         }
+      } else {
+        console.log('👤 Not manager context, using default ID:', performerId);
       }
+      
+      console.log('🎯 Final performer ID for delete:', performerId);
       
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
         method: 'DELETE',
