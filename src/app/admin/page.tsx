@@ -63,6 +63,10 @@ export default function AdminPage() {
         fetch('/api/admin/manager-activity')
       ]);
 
+      console.log('Users response status:', usersRes.status);
+      console.log('Pending response status:', pendingRes.status);
+      console.log('Activity response status:', activityRes.status);
+
       if (usersRes.ok) {
         const usersData = await usersRes.json();
         console.log('Users data received:', usersData);
@@ -137,6 +141,16 @@ export default function AdminPage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+      router.push('/admin/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      router.push('/admin/login');
+    }
+  };
+
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -174,6 +188,11 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+      {/* Debug info */}
+      <div className="bg-yellow-100 p-2 text-xs">
+        Debug: Active tab: {activeTab}, Users: {users.length}, Pending: {pendingManagers.length}, Activity: {managerActivity.length}
+      </div>
+
       {/* Header */}
       <div className="bg-white/70 backdrop-blur-sm border-b border-gray-200/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -193,7 +212,7 @@ export default function AdminPage() {
               <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
             </div>
             <button
-              onClick={() => router.push('/admin/logout')}
+              onClick={handleLogout}
               className="bg-red-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-red-700 transition-all duration-200"
             >
               Logout

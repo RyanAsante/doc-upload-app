@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function GET(req: NextRequest, context: any) {
-  const userId = context?.params?.userId;
+export async function GET(req: NextRequest, context: { params: Promise<{ userId: string }> }) {
+  const resolvedParams = await context.params;
+  const userId = resolvedParams.userId;
 
   if (!userId) {
     return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
@@ -15,6 +15,7 @@ export async function GET(req: NextRequest, context: any) {
       id: true,
       name: true,
       email: true,
+      role: true,
     },
   });
 
@@ -22,7 +23,10 @@ export async function GET(req: NextRequest, context: any) {
     where: { userId },
     select: {
       id: true,
+      title: true,
+      name: true,
       imagePath: true,
+      fileType: true,
       createdAt: true,
     },
     orderBy: { createdAt: 'desc' },
