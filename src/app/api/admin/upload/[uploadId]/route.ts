@@ -44,7 +44,7 @@ export async function DELETE(
           data: {
             userId: performerUser.id, // Use the ID of who performed the deletion
             action: 'DELETE',
-            details: `Deleted ${upload.fileType.toLowerCase()}: ${upload.name}`,
+            details: `File "${upload.name}" deleted by ${performerUser.role.toLowerCase()} ${performerUser.name} (${performerUser.email}) for customer ${upload.user?.name || 'Unknown'} (${upload.user?.email || 'Unknown'})`,
           },
         });
         console.log('✅ DELETE activity log created:', activityLog);
@@ -106,7 +106,7 @@ export async function PATCH(
           data: {
             userId: performerUser.id, // Use the ID of who made the change
             action: 'TITLE_UPDATE',
-            details: `Updated title of ${upload.fileType.toLowerCase()} "${upload.name}" to "${title}"`,
+            details: `File "${upload.name}" title updated by ${performerUser.role.toLowerCase()} ${performerUser.name} (${performerUser.email}) for customer ${upload.user?.name || 'Unknown'} (${upload.user?.email || 'Unknown'}) to "${title}"`,
           },
         });
         console.log('✅ TITLE_UPDATE activity log created:', activityLog);
