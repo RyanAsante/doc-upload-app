@@ -5,7 +5,42 @@ export async function GET() {
   try {
     console.log('🔍 Fetching manager activity...');
     
-    // Get all activity logs from managers
+    // Let's check if we can even access the database
+    try {
+      const userCount = await prisma.user.count();
+      console.log('👥 Total users in database:', userCount);
+      
+      const uploadCount = await prisma.upload.count();
+      console.log('📁 Total uploads in database:', uploadCount);
+      
+      // Check if ActivityLog table exists by trying to count
+      const activityLogCount = await prisma.activityLog.count();
+      console.log('📝 Total activity logs in database:', activityLogCount);
+    } catch (dbError) {
+      console.error('❌ Database access error:', dbError);
+      return NextResponse.json({ error: 'Database access failed' }, { status: 500 });
+    }
+    
+    // First, let's check if there are ANY activity logs at all
+    const allActivityLogs = await prisma.activityLog.findMany({
+      take: 5,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    
+    console.log('📊 Total activity logs found (first 5):', allActivityLogs.length);
+    console.log('📋 Sample activity logs:', allActivityLogs);
+    
+    // Now let's check specifically for manager activity logs
     const managerActivityLogs = await prisma.activityLog.findMany({
       where: {
         user: {
@@ -27,7 +62,7 @@ export async function GET() {
     });
 
     console.log('📊 Found manager activity logs:', managerActivityLogs.length);
-    console.log('📋 Sample log:', managerActivityLogs[0]);
+    console.log('📋 Sample manager log:', managerActivityLogs[0]);
 
     // Transform the data to be more readable
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
