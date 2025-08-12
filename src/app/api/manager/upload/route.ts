@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     const newFileName = `${fileId}_${cleanFileName}`;
     
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabase().storage
       .from('uploads')
       .upload(newFileName, buffer, {
         contentType: file.type || 'image/jpeg',
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get a signed URL for private bucket access
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    const { data: signedUrlData, error: signedUrlError } = await supabase().storage
       .from('uploads')
       .createSignedUrl(newFileName, 60 * 60 * 24 * 365); // 1 year expiry
     
