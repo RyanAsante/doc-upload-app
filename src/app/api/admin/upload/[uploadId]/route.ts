@@ -7,9 +7,9 @@ export async function DELETE(
 ) {
   try {
     const { uploadId } = await params;
-    const { deletedBy, isManagerAction, managerId } = await req.json();
+    const { deletedBy } = await req.json();
     
-    console.log('🗑️ DELETE request for upload:', uploadId, 'by user:', deletedBy, 'isManagerAction:', isManagerAction, 'managerId:', managerId);
+    console.log('🗑️ DELETE request for upload:', uploadId, 'by user:', deletedBy);
     
     // Get upload details before deletion for logging
     const upload = await prisma.upload.findUnique({
@@ -23,17 +23,9 @@ export async function DELETE(
     
     // Get the user who is performing the deletion
     let performerUser = null;
-    let actualPerformerId = deletedBy;
-    
-    // If this is a manager action, use the managerId instead of deletedBy
-    if (isManagerAction && managerId) {
-      actualPerformerId = managerId;
-      console.log('👤 Manager action detected, using managerId:', managerId);
-    }
-    
-    if (actualPerformerId) {
+    if (deletedBy) {
       performerUser = await prisma.user.findUnique({
-        where: { id: actualPerformerId },
+        where: { id: deletedBy },
         select: { id: true, name: true, email: true, role: true }
       });
       console.log('👤 Performer user lookup:', performerUser);
@@ -76,9 +68,9 @@ export async function PATCH(
 ) {
   try {
     const { uploadId } = await params;
-    const { title, updatedBy, isManagerAction, managerId } = await req.json();
+    const { title, updatedBy } = await req.json();
     
-    console.log('✏️ PATCH request for upload:', uploadId, 'by user:', updatedBy, 'isManagerAction:', isManagerAction, 'managerId:', managerId);
+    console.log('✏️ PATCH request for upload:', uploadId, 'by user:', updatedBy);
     
     // Get upload details before update for logging
     const upload = await prisma.upload.findUnique({
@@ -98,17 +90,9 @@ export async function PATCH(
     
     // Get the user who is performing the update
     let performerUser = null;
-    let actualPerformerId = updatedBy;
-    
-    // If this is a manager action, use the managerId instead of updatedBy
-    if (isManagerAction && managerId) {
-      actualPerformerId = managerId;
-      console.log('👤 Manager action detected, using managerId:', managerId);
-    }
-    
-    if (actualPerformerId) {
+    if (updatedBy) {
       performerUser = await prisma.user.findUnique({
-        where: { id: actualPerformerId },
+        where: { id: updatedBy },
         select: { id: true, name: true, email: true, role: true }
       });
       console.log('👤 Performer user lookup:', performerUser);

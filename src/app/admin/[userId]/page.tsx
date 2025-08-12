@@ -28,18 +28,7 @@ interface ManagerActivity {
   managerRole: string;
 }
 
-interface DeleteRequestBody {
-  deletedBy?: string;
-  isManagerAction?: boolean;
-  managerId?: string;
-}
 
-interface UpdateTitleRequestBody {
-  title: string;
-  updatedBy?: string;
-  isManagerAction?: boolean;
-  managerId?: string;
-}
 
 export default function AdminUserPage({ params }: { params: Promise<{ userId: string }> }) {
   const router = useRouter();
@@ -280,17 +269,13 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       const currentUserIsManager = await checkCurrentUserIsManager();
       console.log('👤 Current user is manager:', currentUserIsManager);
       
-      let requestBody: DeleteRequestBody = {};
+      let performerId: string | undefined;
       
       if (currentUserIsManager) {
-        // If it's a manager, get their ID and pass it explicitly
+        // If it's a manager, get their ID from cookies (same as upload)
         const managerId = await getCurrentManagerId();
         if (managerId) {
-          requestBody = { 
-            deletedBy: managerId,
-            isManagerAction: true,
-            managerId: managerId
-          };
+          performerId = managerId;
           console.log('✅ Manager delete - using manager ID:', managerId);
         } else {
           console.log('⚠️ No manager ID found, cannot proceed');
@@ -298,25 +283,22 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         }
       } else {
         // If it's an admin, use the current user ID
-        requestBody = { 
-          deletedBy: user?.id,
-          isManagerAction: false
-        };
+        performerId = user?.id;
         console.log('👤 Admin delete - using current user ID:', user?.id);
       }
       
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({ deletedBy: performerId }),
       });
 
       if (response.ok) {
         setUploads(uploads.filter(upload => upload.id !== uploadId));
         
         // If this is a manager, refresh their activity
-        if (currentUserIsManager && requestBody.managerId) {
-          fetchManagerActivity(requestBody.managerId);
+        if (currentUserIsManager && performerId) {
+          fetchManagerActivity(performerId);
         }
       }
     } catch {
@@ -330,18 +312,13 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       const currentUserIsManager = await checkCurrentUserIsManager();
       console.log('👤 Current user is manager for title update:', currentUserIsManager);
       
-      let requestBody: UpdateTitleRequestBody = { title: editingTitle };
+      let performerId: string | undefined;
       
       if (currentUserIsManager) {
-        // If it's a manager, get their ID and pass it explicitly
+        // If it's a manager, get their ID from cookies (same as upload)
         const managerId = await getCurrentManagerId();
         if (managerId) {
-          requestBody = { 
-            title: editingTitle,
-            updatedBy: managerId,
-            isManagerAction: true,
-            managerId: managerId
-          };
+          performerId = managerId;
           console.log('✅ Manager title update - using manager ID:', managerId);
         } else {
           console.log('⚠️ No manager ID found, cannot proceed');
@@ -349,18 +326,17 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         }
       } else {
         // If it's an admin, use the current user ID
-        requestBody = { 
-          title: editingTitle,
-          updatedBy: user?.id,
-          isManagerAction: false
-        };
+        performerId = user?.id;
         console.log('👤 Admin title update - using current user ID:', user?.id);
       }
       
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({ 
+          title: editingTitle,
+          updatedBy: performerId 
+        }),
       });
       
       if (response.ok) {
@@ -371,8 +347,8 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         setEditingTitle('');
         
         // If this is a manager, refresh their activity
-        if (currentUserIsManager && requestBody.managerId) {
-          fetchManagerActivity(requestBody.managerId);
+        if (currentUserIsManager && performerId) {
+          fetchManagerActivity(performerId);
         }
       }
     } catch {
