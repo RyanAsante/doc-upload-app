@@ -29,6 +29,7 @@ export async function GET(
     });
 
     console.log('📊 Found activity logs for manager:', managerActivityLogs.length);
+    console.log('📋 Sample activity logs:', managerActivityLogs.slice(0, 3));
 
     // Transform the data to be more readable
     const managerActivity = managerActivityLogs.map((log) => ({

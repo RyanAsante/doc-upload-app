@@ -26,13 +26,21 @@ export async function DELETE(
     
     // Log the deletion activity with the correct user ID
     if (deletedBy) {
-      await prisma.activityLog.create({
-        data: {
-          userId: deletedBy, // Use the ID of who performed the deletion
-          action: 'DELETE',
-          details: `Deleted ${upload.fileType.toLowerCase()}: ${upload.name}`,
-        },
-      });
+      console.log('📝 Creating DELETE activity log for user:', deletedBy);
+      try {
+        const activityLog = await prisma.activityLog.create({
+          data: {
+            userId: deletedBy, // Use the ID of who performed the deletion
+            action: 'DELETE',
+            details: `Deleted ${upload.fileType.toLowerCase()}: ${upload.name}`,
+          },
+        });
+        console.log('✅ DELETE activity log created:', activityLog);
+      } catch (logError) {
+        console.error('❌ Failed to create DELETE activity log:', logError);
+      }
+    } else {
+      console.log('⚠️ No deletedBy provided for DELETE action');
     }
     
     return NextResponse.json({ success: true, message: 'Upload deleted successfully' });
@@ -68,13 +76,21 @@ export async function PATCH(
     
     // Log the title update activity
     if (updatedBy) {
-      await prisma.activityLog.create({
-        data: {
-          userId: updatedBy, // Use the ID of who made the change
-          action: 'TITLE_UPDATE',
-          details: `Updated title of ${upload.fileType.toLowerCase()} "${upload.name}" to "${title}"`,
-        },
-      });
+      console.log('📝 Creating TITLE_UPDATE activity log for user:', updatedBy);
+      try {
+        const activityLog = await prisma.activityLog.create({
+          data: {
+            userId: updatedBy, // Use the ID of who made the change
+            action: 'TITLE_UPDATE',
+            details: `Updated title of ${upload.fileType.toLowerCase()} "${upload.name}" to "${title}"`,
+          },
+        });
+        console.log('✅ TITLE_UPDATE activity log created:', activityLog);
+      } catch (logError) {
+        console.error('❌ Failed to create TITLE_UPDATE activity log:', logError);
+      }
+    } else {
+      console.log('⚠️ No updatedBy provided for TITLE_UPDATE action');
     }
     
     return NextResponse.json({ success: true, upload: updatedUpload });
