@@ -30,11 +30,9 @@ interface ActivityLog {
   action: string;
   details: string;
   createdAt: string;
-  user: {
-    name: string;
-    email: string;
-    role: string;
-  };
+  managerName: string;
+  managerEmail: string;
+  activityType: string;
 }
 
 export default function AdminPage() {
@@ -416,8 +414,8 @@ export default function AdminPage() {
                   <div key={log.id} className="border border-gray-200 rounded-xl p-4 bg-white/50">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-semibold text-gray-900">{log.user.name}</h3>
-                        <p className="text-gray-600">{log.user.email}</p>
+                        <h3 className="font-semibold text-gray-900">{log.managerName || 'Unknown Manager'}</h3>
+                        <p className="text-gray-600">{log.managerEmail || 'No email'}</p>
                         <p className="text-gray-800 mt-1">{log.details}</p>
                         <p className="text-sm text-gray-500 mt-2">
                           {new Date(log.createdAt).toLocaleString()}
