@@ -41,6 +41,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   const [cameraOn, setCameraOn] = useState(false);
   const [managerActivity, setManagerActivity] = useState<ManagerActivity[]>([]);
   const [loadingActivity, setLoadingActivity] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -55,6 +56,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
           setUser(data.user);
           setUploads(data.uploads);
           setIsManager(data.user.role === 'MANAGER');
+          setCurrentUserRole(data.user.role); // Set current user's role
           
           // If this is a manager, fetch their activity
           if (data.user.role === 'MANAGER') {
@@ -107,6 +109,27 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       console.error('❌ Error checking manager auth:', error);
     }
     return null;
+  };
+
+  // Function to check if current user is a manager
+  const checkCurrentUserIsManager = async (): Promise<boolean> => {
+    try {
+      console.log('🔍 Checking if current user is a manager...');
+      const response = await fetch('/api/manager/check-auth');
+      console.log('📡 Manager auth check response status:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📋 Current user auth data:', data);
+        return true; // If we can get manager auth, current user is a manager
+      } else {
+        console.log('❌ Current user is not a manager');
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Error checking current user auth:', error);
+      return false;
+    }
   };
 
   const startCamera = async () => {
@@ -240,10 +263,14 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
     try {
       console.log('🗑️ Delete request - isManager:', isManager, 'user.id:', user?.id);
       
+      // Check if the current user performing the action is a manager
+      const currentUserIsManager = await checkCurrentUserIsManager();
+      console.log('👤 Current user is manager:', currentUserIsManager);
+      
       // Get the current manager's ID if we're in a manager context
       let performerId = user?.id; // Default to current user (customer)
       
-      if (isManager) {
+      if (currentUserIsManager) {
         console.log('👤 Manager context detected, getting manager ID...');
         const managerId = await getCurrentManagerId();
         console.log('👤 Manager ID result:', managerId);
@@ -272,7 +299,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         setUploads(uploads.filter(upload => upload.id !== uploadId));
         
         // If this is a manager, refresh their activity
-        if (isManager && performerId) {
+        if (currentUserIsManager && performerId) {
           fetchManagerActivity(performerId);
         }
       }
@@ -283,15 +310,29 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
 
   const handleUpdateTitle = async (uploadId: string) => {
     try {
+      // Check if the current user performing the action is a manager
+      const currentUserIsManager = await checkCurrentUserIsManager();
+      console.log('👤 Current user is manager for title update:', currentUserIsManager);
+      
       // Get the current manager's ID if we're in a manager context
       let performerId = user?.id; // Default to current user (customer)
       
-      if (isManager) {
+      if (currentUserIsManager) {
+        console.log('👤 Manager context detected for title update, getting manager ID...');
         const managerId = await getCurrentManagerId();
+        console.log('👤 Manager ID result for title update:', managerId);
+        
         if (managerId) {
           performerId = managerId; // Use manager's ID for activity logging
+          console.log('✅ Using manager ID for title update activity logging:', performerId);
+        } else {
+          console.log('⚠️ No manager ID found for title update, using default:', performerId);
         }
+      } else {
+        console.log('👤 Not manager context for title update, using default ID:', performerId);
       }
+      
+      console.log('🎯 Final performer ID for title update:', performerId);
       
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
         method: 'PATCH',
@@ -310,7 +351,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         setEditingTitle('');
         
         // If this is a manager, refresh their activity
-        if (isManager && performerId) {
+        if (currentUserIsManager && performerId) {
           fetchManagerActivity(performerId);
         }
       }
