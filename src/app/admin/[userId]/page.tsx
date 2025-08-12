@@ -319,82 +319,112 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
           <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Upload Files for {user.name}</h2>
             
-            {/* Camera Upload */}
+            {/* Camera Section */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Camera Upload</h3>
-              <button
-                onClick={startCamera}
-                className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-all duration-200 mr-3"
-              >
-                Open Camera
-              </button>
-              {cameraOn && (
-                <button
-                  onClick={stopCamera}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-200"
-                >
-                  Close Camera
-                </button>
-              )}
+              <h3 className="text-lg font-medium text-gray-900 mb-3">📷 Quick Camera Capture</h3>
               
-              {cameraOn && (
-                <div className="mt-4">
-                  <div className="relative inline-block">
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                      className="w-80 h-96 object-cover rounded-lg border-2 border-gray-300"
-                      style={{ transform: 'scaleX(-1)' }}
-                    />
-                    <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-sm">
-                      Camera Preview
+              {/* Always render video element but hide when not in use */}
+              <video 
+                ref={videoRef} 
+                className={`w-full rounded-lg border border-gray-300 bg-black transition-opacity duration-300 ${
+                  cameraOn ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+                autoPlay
+                playsInline
+                muted
+                style={{ 
+                  height: '400px', 
+                  display: cameraOn ? 'block' : 'none',
+                  transform: 'scaleX(-1)' // Mirror the video for better UX
+                }}
+              />
+              
+              {!cameraOn ? (
+                <div className="space-y-4">
+                  <button
+                    onClick={startCamera}
+                    className="px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Open Camera</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Camera Preview Box */}
+                  <div className="bg-gray-100 rounded-xl p-4 border-2 border-dashed border-gray-300">
+                    <div className="text-center text-sm text-gray-500 mb-2">
+                      📄 Position your document in the camera view above
+                    </div>
+                    <div className="text-xs text-gray-400 text-center">
+                      💡 Tip: Hold the camera steady and ensure good lighting for best results
                     </div>
                   </div>
-                  <div className="mt-3 space-x-3">
+                  
+                  <canvas ref={canvasRef} hidden />
+                  
+                  <div className="flex gap-3">
                     <button
                       onClick={capturePhoto}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200"
+                      className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
                     >
-                      Capture Photo
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      </svg>
+                      <span>📸 Capture & Upload</span>
                     </button>
                     <button
                       onClick={captureVideo}
-                      className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200"
+                      className="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
                     >
-                      Start Video
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span>🎥 Start Video</span>
+                    </button>
+                    <button
+                      onClick={stopCamera}
+                      className="bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      <span>❌ Close Camera</span>
                     </button>
                   </div>
-                  {/* Hidden canvas for photo capture */}
-                  <canvas ref={canvasRef} hidden />
                 </div>
               )}
             </div>
 
-            {/* File Upload */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">File Upload</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Video Upload
-                  </label>
+            {/* File Upload Section */}
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">📁 File Upload</h3>
+              
+              {/* Video Upload Section */}
+              <div className="mb-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                <h4 className="text-sm font-medium text-emerald-900 mb-2">🎥 Video Upload</h4>
+                <div className="flex items-center space-x-4">
                   <input
                     type="file"
-                    accept="video/*"
                     onChange={handleFileUpload}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    accept="video/*"
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Document Upload
-                  </label>
+              </div>
+
+              {/* Document Upload Section */}
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">📄 Document Upload</h4>
+                <div className="flex items-center space-x-4">
                   <input
                     type="file"
-                    accept="image/*"
                     onChange={handleFileUpload}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    accept="image/*,.pdf,.doc,.docx"
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
                   />
                 </div>
               </div>
