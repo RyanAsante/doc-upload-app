@@ -120,6 +120,7 @@ export default function AdminPage() {
 
   const handleApproveManager = async (applicationId: string, action: 'APPROVE' | 'REJECT') => {
     try {
+      setLoading(true);
       const response = await fetch('/api/admin/approve-manager', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -131,13 +132,24 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        // Refresh the data
-        fetchData();
+        const result = await response.json();
+        console.log('Manager action result:', result);
+        
+        // Show success message
+        alert(`${action === 'APPROVE' ? 'Approved' : 'Rejected'} manager successfully!`);
+        
+        // Refresh the data to update the UI
+        await fetchData();
       } else {
-        console.error('Failed to approve/reject manager');
+        const errorData = await response.json();
+        console.error('Failed to approve/reject manager:', errorData);
+        alert(`Failed to ${action.toLowerCase()} manager: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error approving manager:', error);
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setLoading(false);
     }
   };
 
