@@ -268,7 +268,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       console.log('👤 Current user is manager:', currentUserIsManager);
       
       // Get the current manager's ID if we're in a manager context
-      let performerId = user?.id; // Default to current user (customer)
+      let performerId: string | undefined;
       
       if (currentUserIsManager) {
         console.log('👤 Manager context detected, getting manager ID...');
@@ -279,10 +279,13 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
           performerId = managerId; // Use manager's ID for activity logging
           console.log('✅ Using manager ID for activity logging:', performerId);
         } else {
-          console.log('⚠️ No manager ID found, using default:', performerId);
+          console.log('⚠️ No manager ID found, cannot proceed');
+          return; // Don't proceed if we can't get manager ID
         }
       } else {
-        console.log('👤 Not manager context, using default ID:', performerId);
+        // If not a manager, use the current user's ID (for admin actions)
+        performerId = user?.id;
+        console.log('👤 Admin context, using current user ID:', performerId);
       }
       
       console.log('🎯 Final performer ID for delete:', performerId);
@@ -315,7 +318,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       console.log('👤 Current user is manager for title update:', currentUserIsManager);
       
       // Get the current manager's ID if we're in a manager context
-      let performerId = user?.id; // Default to current user (customer)
+      let performerId: string | undefined;
       
       if (currentUserIsManager) {
         console.log('👤 Manager context detected for title update, getting manager ID...');
@@ -326,10 +329,13 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
           performerId = managerId; // Use manager's ID for activity logging
           console.log('✅ Using manager ID for title update activity logging:', performerId);
         } else {
-          console.log('⚠️ No manager ID found for title update, using default:', performerId);
+          console.log('⚠️ No manager ID found for title update, cannot proceed');
+          return; // Don't proceed if we can't get manager ID
         }
       } else {
-        console.log('👤 Not manager context for title update, using default ID:', performerId);
+        // If not a manager, use the current user's ID (for admin actions)
+        performerId = user?.id;
+        console.log('👤 Admin context for title update, using current user ID:', performerId);
       }
       
       console.log('🎯 Final performer ID for title update:', performerId);
