@@ -42,6 +42,15 @@ export async function POST(req: NextRequest) {
       path: '/',
     });
     
+    // Also store the manager's email for identification
+    cookieStore.set('manager-email', user.email, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
+    });
+    
     return NextResponse.json({ success: true, message: 'Manager login successful' });
   } catch (error) {
     console.error('Manager login error:', error);

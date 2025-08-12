@@ -11,11 +11,19 @@ export async function POST(req: NextRequest) {
     // Check if manager is authenticated
     const cookieStore = await cookies();
     const managerAuth = cookieStore.get('manager-auth');
+    const managerEmail = cookieStore.get('manager-email');
     
     if (!managerAuth || managerAuth.value !== 'true') {
       console.log('❌ Manager not authenticated');
       return NextResponse.json({ message: 'Manager not authenticated' }, { status: 401 });
     }
+    
+    if (!managerEmail) {
+      console.log('❌ Manager email not found in cookie');
+      return NextResponse.json({ message: 'Manager email not found' }, { status: 401 });
+    }
+    
+    console.log('👤 Manager email from cookie:', managerEmail.value);
     
     // Get the form data
     const formData = await req.formData();
@@ -78,8 +86,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Customer not found' }, { status: 404 });
     }
     
-    // For now, let's create a simple activity log without the manager details
-    // We'll fix this by getting the manager's email from the session later
+    // Get the manager (who uploaded the file)
+    const manager = await prisma.user.findUnique({
+      where: { email: managerEmail.value },
+    });
+
+    if (!manager) {
+      console.log('❌ Manager not found:', managerEmail.value);
+      return NextResponse.json({ message: 'Manager not found' }, { status: 404 });
+    }
     
     // Determine file type
     const fileType = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
@@ -99,9 +114,9 @@ export async function POST(req: NextRequest) {
     try {
       const activityLog = await prisma.activityLog.create({
         data: {
-          userId: customer.id, // Temporarily use customer ID
+          userId: manager.id, // Use manager ID
           action: 'UPLOAD',
-          details: `File "${file.name}" uploaded by manager for customer ${customer.name} (${customer.email})`,
+          details: `File "${file.name}" uploaded by manager ${manager.name} (${manager.email}) for customer ${customer.name} (${customer.email})`,
         },
       });
       console.log('✅ Activity log created successfully:', activityLog);
