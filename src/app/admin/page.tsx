@@ -120,16 +120,25 @@ export default function AdminPage() {
 
   const handleApproveManager = async (applicationId: string, action: 'APPROVE' | 'REJECT') => {
     try {
+      console.log(`Starting ${action.toLowerCase()} process for application:`, applicationId);
       setLoading(true);
+      
+      const requestBody = {
+        applicationId,
+        action,
+        adminId: 'admin', // You might want to get the actual admin ID
+      };
+      
+      console.log('Sending request with body:', requestBody);
+      
       const response = await fetch('/api/admin/approve-manager', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          applicationId,
-          action,
-          adminId: 'admin', // You might want to get the actual admin ID
-        }),
+        body: JSON.stringify(requestBody),
       });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (response.ok) {
         const result = await response.json();
@@ -139,7 +148,9 @@ export default function AdminPage() {
         alert(`${action === 'APPROVE' ? 'Approved' : 'Rejected'} manager successfully!`);
         
         // Refresh the data to update the UI
+        console.log('Refreshing data...');
         await fetchData();
+        console.log('Data refresh completed');
       } else {
         const errorData = await response.json();
         console.error('Failed to approve/reject manager:', errorData);
