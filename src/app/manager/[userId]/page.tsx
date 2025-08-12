@@ -232,6 +232,10 @@ export default function ManagerUserPage() {
     try {
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          deletedBy: user?.id // Pass the manager's ID for activity logging
+        }),
       });
       
       if (response.ok) {
@@ -251,7 +255,10 @@ export default function ManagerUserPage() {
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTitle }),
+        body: JSON.stringify({ 
+          title: newTitle,
+          updatedBy: user?.id // Pass the manager's ID for activity logging
+        }),
       });
       
       if (response.ok) {

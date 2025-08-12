@@ -7,6 +7,7 @@ export async function DELETE(
 ) {
   try {
     const { uploadId } = await params;
+    const { deletedBy } = await req.json();
     
     // Get upload details before deletion for logging
     const upload = await prisma.upload.findUnique({
@@ -23,11 +24,11 @@ export async function DELETE(
       where: { id: uploadId },
     });
     
-    // Log the deletion activity
-    if (upload.userId) {
+    // Log the deletion activity with the correct user ID
+    if (deletedBy) {
       await prisma.activityLog.create({
         data: {
-          userId: upload.userId,
+          userId: deletedBy, // Use the ID of who performed the deletion
           action: 'DELETE',
           details: `Deleted ${upload.fileType.toLowerCase()}: ${upload.name}`,
         },
