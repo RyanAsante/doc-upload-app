@@ -68,13 +68,22 @@ export async function POST(req: NextRequest) {
 
     // Log the upload activity
     if (user?.id) {
-      await prisma.activityLog.create({
-        data: {
-          userId: user.id,
-          action: 'UPLOAD',
-          details: `Uploaded ${fileType.toLowerCase()}: ${file.name}`,
-        },
-      });
+      console.log('📝 Creating activity log for user:', user.email, 'Role:', user.role);
+      
+      try {
+        const activityLog = await prisma.activityLog.create({
+          data: {
+            userId: user.id,
+            action: 'UPLOAD',
+            details: `Uploaded ${fileType.toLowerCase()}: ${file.name}`,
+          },
+        });
+        console.log('✅ Activity log created successfully:', activityLog);
+      } catch (logError) {
+        console.error('❌ Failed to create activity log:', logError);
+      }
+    } else {
+      console.log('⚠️ No user found for email:', userEmail);
     }
 
     console.log('✅ Upload successful:', newFileName);
