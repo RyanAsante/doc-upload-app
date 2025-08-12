@@ -18,6 +18,16 @@ interface Upload {
   createdAt: string;
 }
 
+interface ManagerActivity {
+  id: string;
+  action: string;
+  details: string;
+  createdAt: string;
+  managerName: string;
+  managerEmail: string;
+  managerRole: string;
+}
+
 export default function AdminUserPage({ params }: { params: Promise<{ userId: string }> }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -29,6 +39,8 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isManager, setIsManager] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
+  const [managerActivity, setManagerActivity] = useState<ManagerActivity[]>([]);
+  const [loadingActivity, setLoadingActivity] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -43,6 +55,11 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
           setUser(data.user);
           setUploads(data.uploads);
           setIsManager(data.user.role === 'MANAGER');
+          
+          // If this is a manager, fetch their activity
+          if (data.user.role === 'MANAGER') {
+            fetchManagerActivity(resolvedParams.userId);
+          }
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -53,6 +70,21 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
 
     fetchUserData();
   }, [params]);
+
+  const fetchManagerActivity = async (managerId: string) => {
+    try {
+      setLoadingActivity(true);
+      const response = await fetch(`/api/admin/manager-activity/${managerId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setManagerActivity(data.managerActivity || []);
+      }
+    } catch (error) {
+      console.error('Error fetching manager activity:', error);
+    } finally {
+      setLoadingActivity(false);
+    }
+  };
 
   const startCamera = async () => {
     try {
@@ -189,6 +221,11 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
 
       if (response.ok) {
         setUploads(uploads.filter(upload => upload.id !== uploadId));
+        
+        // If this is a manager, refresh their activity
+        if (isManager && user) {
+          fetchManagerActivity(user.id);
+        }
       }
     } catch {
       console.error('Delete failed');
@@ -200,7 +237,10 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: editingTitle }),
+        body: JSON.stringify({ 
+          title: editingTitle,
+          updatedBy: user?.id // Pass the current user's ID for activity logging
+        }),
       });
       
       if (response.ok) {
@@ -209,6 +249,11 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         ));
         setEditingId(null);
         setEditingTitle('');
+        
+        // If this is a manager, refresh their activity
+        if (isManager && user) {
+          fetchManagerActivity(user.id);
+        }
       }
     } catch {
       console.error('Title update failed');
@@ -439,7 +484,47 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
             <p className="text-gray-600 mb-4">
               This manager&apos;s activity will be logged here. Admins cannot upload files for managers.
             </p>
-            {/* You can add manager activity logs here later */}
+            {loadingActivity ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading activity...</p>
+              </div>
+            ) : managerActivity.length === 0 ? (
+              <p className="text-gray-600 text-center py-8">No activity logged yet for this manager.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Action
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Details
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {managerActivity.map((activity) => (
+                      <tr key={activity.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {activity.action}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {activity.details}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(activity.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 

@@ -47,13 +47,34 @@ export async function PATCH(
 ) {
   try {
     const { uploadId } = await params;
-    const { title } = await req.json();
+    const { title, updatedBy } = await req.json();
+    
+    // Get upload details before update for logging
+    const upload = await prisma.upload.findUnique({
+      where: { id: uploadId },
+      include: { user: true },
+    });
+    
+    if (!upload) {
+      return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
+    }
     
     // Update the upload title
     const updatedUpload = await prisma.upload.update({
       where: { id: uploadId },
       data: { title },
     });
+    
+    // Log the title update activity
+    if (updatedBy) {
+      await prisma.activityLog.create({
+        data: {
+          userId: updatedBy, // Use the ID of who made the change
+          action: 'TITLE_UPDATE',
+          details: `Updated title of ${upload.fileType.toLowerCase()} "${upload.name}" to "${title}"`,
+        },
+      });
+    }
     
     return NextResponse.json({ success: true, upload: updatedUpload });
   } catch (error) {
