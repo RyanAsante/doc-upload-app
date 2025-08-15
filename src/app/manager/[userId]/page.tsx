@@ -579,7 +579,7 @@ export default function ManagerUserPage() {
             )}
           </div>
 
-          {/* File Upload Section */}
+          {/* File Upload Section - Updated with enhanced UI components */}
           <div className="border-t pt-6">
             <h3 className="text-lg font-medium text-gray-900 mb-3">📁 File Upload</h3>
             
