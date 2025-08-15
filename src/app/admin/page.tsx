@@ -50,6 +50,15 @@ export default function AdminPage() {
   useEffect(() => {
     console.log('Admin page mounted, fetching data...');
     fetchData();
+    
+    // Set up auto-refresh every 2 minutes (120000ms)
+    const refreshInterval = setInterval(() => {
+      console.log('Auto-refreshing admin data...');
+      fetchData();
+    }, 120000);
+    
+    // Cleanup interval on component unmount
+    return () => clearInterval(refreshInterval);
   }, []);
 
   const fetchData = async () => {
@@ -160,6 +169,26 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Function to calculate dynamic upload count for managers
+  const getManagerUploadCount = (userId: string, userRole: string, staticUploadCount: number) => {
+    if (userRole !== 'MANAGER') {
+      return staticUploadCount; // Return static count for non-managers
+    }
+    
+    // For managers, find their email and count UPLOAD actions minus DELETE actions
+    const user = users.find(u => u.id === userId);
+    if (!user) return staticUploadCount;
+    
+    const managerActions = managerActivity.filter(log => 
+      log.managerEmail === user.email
+    );
+    
+    const uploadCount = managerActions.filter(log => log.action === 'UPLOAD').length;
+    const deleteCount = managerActions.filter(log => log.action === 'DELETE').length;
+    
+    return Math.max(0, uploadCount - deleteCount); // Ensure count doesn't go negative
   };
 
   const handleLogout = async () => {
@@ -339,7 +368,9 @@ export default function AdminPage() {
                           {user.role}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-gray-600">{user.uploads.length}</td>
+                      <td className="py-3 px-4 text-gray-600">
+                        {getManagerUploadCount(user.id, user.role, user.uploads.length)}
+                      </td>
                       <td className="py-3 px-4">
                         <button
                           onClick={() => router.push(`/admin/${user.id}`)}
