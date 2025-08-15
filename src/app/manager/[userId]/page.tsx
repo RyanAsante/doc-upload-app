@@ -76,24 +76,26 @@ export default function ManagerUserPage() {
       // Request camera access with back camera preference and document-friendly dimensions
       let stream;
       try {
-        // First try to get back camera with ideal settings
+        // First try to get back camera with higher quality settings
         stream = await navigator.mediaDevices.getUserMedia({ 
           video: {
-            width: { ideal: 1280, min: 640 },
-            height: { ideal: 720, min: 480 },
+            width: { ideal: 1920, min: 1280 }, // 1080p preferred, 720p minimum
+            height: { ideal: 1080, min: 720 },
             facingMode: 'environment', // Prefer back camera
-            aspectRatio: { ideal: 1.4 } // Closer to A4 paper ratio
+            aspectRatio: { ideal: 1.4 }, // Closer to A4 paper ratio
+            frameRate: { ideal: 30, min: 24 } // Smooth video
           } 
         });
       } catch (err) {
         console.log('Back camera not available, trying front camera...');
-        // Fallback to front camera if back camera fails
+        // Fallback to front camera if back camera fails with same quality
         stream = await navigator.mediaDevices.getUserMedia({ 
           video: {
-            width: { ideal: 1280, min: 640 },
-            height: { ideal: 720, min: 480 },
+            width: { ideal: 1920, min: 1280 }, // 1080p preferred, 720p minimum
+            height: { ideal: 1080, min: 720 },
             facingMode: 'user', // Front camera fallback
-            aspectRatio: { ideal: 1.4 }
+            aspectRatio: { ideal: 1.4 },
+            frameRate: { ideal: 30, min: 24 } // Smooth video
           } 
         });
       }
@@ -397,8 +399,8 @@ export default function ManagerUserPage() {
               muted
               style={{ 
                 height: '400px', 
-                display: cameraOn ? 'block' : 'none',
-                transform: 'scaleX(-1)' // Mirror the video for better UX
+                display: cameraOn ? 'block' : 'none'
+                // Removed transform: 'scaleX(-1)' to fix orientation
               }}
             />
             

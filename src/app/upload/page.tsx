@@ -36,7 +36,13 @@ const handleLogout = () => {
   const startCamera = async () => {
     try {
       setCameraOn(true);
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: {
+          width: { ideal: 1920, min: 1280 }, // 1080p preferred, 720p minimum
+          height: { ideal: 1080, min: 720 },
+          frameRate: { ideal: 30, min: 24 } // Smooth video
+        } 
+      });
       console.log("Stream started:", stream);
   
       if (videoRef.current) {

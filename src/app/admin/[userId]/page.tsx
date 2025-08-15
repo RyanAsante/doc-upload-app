@@ -147,26 +147,28 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       video.style.display = 'block';
       video.style.backgroundColor = '#000';
 
-      // Try to get camera access with back camera preference
+      // Try to get camera access with back camera preference and higher quality
       let stream;
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: { ideal: 'environment' }, // Prefer back camera
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            aspectRatio: { ideal: 1.4 }
+            width: { ideal: 1920, min: 1280 }, // 1080p preferred, 720p minimum
+            height: { ideal: 1080, min: 720 },
+            aspectRatio: { ideal: 1.4 },
+            frameRate: { ideal: 30, min: 24 } // Smooth video
           }
         });
       } catch {
         console.log('Back camera failed, trying front camera...');
-        // Fallback to front camera
+        // Fallback to front camera with same quality settings
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'user',
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            aspectRatio: { ideal: 1.4 }
+            width: { ideal: 1920, min: 1280 }, // 1080p preferred, 720p minimum
+            height: { ideal: 1080, min: 720 },
+            aspectRatio: { ideal: 1.4 },
+            frameRate: { ideal: 30, min: 24 } // Smooth video
           }
         });
       }
@@ -475,8 +477,8 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                 muted
                 style={{ 
                   height: '400px', 
-                  display: cameraOn ? 'block' : 'none',
-                  transform: 'scaleX(-1)' // Mirror the video for better UX
+                  display: cameraOn ? 'block' : 'none'
+                  // Removed transform: 'scaleX(-1)' to fix orientation
                 }}
               />
               
