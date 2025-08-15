@@ -33,6 +33,12 @@ export default function ManagerUserPage() {
   const [editingTitle, setEditingTitle] = useState<string>('');
   const [editingId, setEditingId] = useState<string>('');
   
+  // Video recording states
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -163,6 +169,75 @@ export default function ManagerUserPage() {
       stream.getTracks().forEach(track => track.stop());
       setCameraOn(false);
     }
+  };
+
+  // Video recording functions
+  const startVideoRecording = () => {
+    if (!videoRef.current || !videoRef.current.srcObject) {
+      setUploadStatus('Camera must be on to start recording');
+      return;
+    }
+
+    try {
+      const stream = videoRef.current.srcObject as MediaStream;
+      const recorder = new MediaRecorder(stream, {
+        mimeType: 'video/webm;codecs=vp9'
+      });
+
+      const chunks: Blob[] = [];
+      
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const file = new File([blob], `recorded_video_${Date.now()}.webm`, { type: 'video/webm' });
+        handleFileUpload(file);
+        setRecordedChunks([]);
+        setIsRecording(false);
+        setRecordingTime(0);
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+      setRecordedChunks(chunks);
+      setUploadStatus('Recording started... Press Stop Recording to finish.');
+
+      // Start recording timer
+      const timer = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+
+      // Store timer reference
+      (recorder as any).timer = timer;
+
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      setUploadStatus('Failed to start recording. Please try again.');
+    }
+  };
+
+  const stopVideoRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      
+      // Clear timer
+      if ((mediaRecorder as any).timer) {
+        clearInterval((mediaRecorder as any).timer);
+      }
+      
+      setUploadStatus('Processing recorded video...');
+    }
+  };
+
+  const formatRecordingTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const captureImage = () => {
@@ -455,6 +530,31 @@ export default function ManagerUserPage() {
                     </svg>
                     <span>📸 Capture & Upload</span>
                   </button>
+                  
+                  {/* Video Recording Buttons */}
+                  {!isRecording ? (
+                    <button
+                      onClick={startVideoRecording}
+                      className="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span>🎥 Start Recording</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={stopVideoRecording}
+                      className="bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                      </svg>
+                      <span>⏹️ Stop Recording</span>
+                    </button>
+                  )}
+                  
                   <button
                     onClick={stopCamera}
                     className="bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
@@ -465,6 +565,16 @@ export default function ManagerUserPage() {
                     <span>❌ Close Camera</span>
                   </button>
                 </div>
+                
+                {/* Recording Timer Display */}
+                {isRecording && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                      <span className="text-red-700 font-medium">Recording: {formatRecordingTime(recordingTime)}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
