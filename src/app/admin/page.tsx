@@ -217,20 +217,20 @@ export default function AdminPage() {
       {/* Header */}
       <div className="bg-white/70 backdrop-blur-sm border-b border-gray-200/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-3">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-6 space-y-4 sm:space-y-0">
+            <div className="flex items-center space-x-4 sm:space-x-3">
               <button
                 onClick={() => router.push('/')}
                 className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
               >
-                <div className="w-10 h-10 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">V</span>
+                <div className="w-12 h-12 sm:w-10 sm:h-10 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-xl sm:text-lg">V</span>
                 </div>
                 <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                   VaultDrop
                 </span>
               </button>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
             </div>
             <button
               onClick={handleLogout}

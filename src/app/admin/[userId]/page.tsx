@@ -459,12 +459,12 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
 
         {/* File Upload Section - Only show for CUSTOMER users */}
         {!isManager && (
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Upload Files for {user.name}</h2>
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-200/50 mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Upload Files for {user.name}</h2>
             
             {/* Camera Section */}
             <div className="mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">📷 Quick Camera Capture</h3>
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3">📷 Quick Camera Capture</h3>
               
               {/* Always render video element but hide when not in use */}
               <video 
@@ -509,7 +509,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                   
                   <canvas ref={canvasRef} hidden />
                   
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={capturePhoto}
                       className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"

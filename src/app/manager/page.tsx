@@ -81,21 +81,21 @@ export default function ManagerPage() {
     <div className="min-h-screen bg-gray-50/50">
       {/* Header */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
             <button onClick={() => router.push('/')} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-              <div className="w-10 h-10 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">V</span>
+              <div className="w-12 h-12 sm:w-10 sm:h-10 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-xl sm:text-lg">V</span>
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">Manager Dashboard</h1>
+                <h1 className="text-2xl sm:text-xl font-semibold text-gray-900">Manager Dashboard</h1>
                 <p className="text-sm text-gray-500">Manage users and documents</p>
               </div>
             </button>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.push('/manager/login')}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
+                className="text-gray-600 hover:text-gray-900 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
               >
                 Logout
               </button>
