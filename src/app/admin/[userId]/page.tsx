@@ -288,7 +288,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       }, 1000);
 
       // Store timer reference
-      (recorder as any).timer = timer;
+      (recorder as MediaRecorder & { timer?: NodeJS.Timeout }).timer = timer;
 
     } catch (error) {
       console.error('Error starting recording:', error);
@@ -301,8 +301,9 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       mediaRecorder.stop();
       
       // Clear timer
-      if ((mediaRecorder as any).timer) {
-        clearInterval((mediaRecorder as any).timer);
+      // Clear timer
+      if ((mediaRecorder as MediaRecorder & { timer?: NodeJS.Timeout }).timer) {
+        clearInterval((mediaRecorder as MediaRecorder & { timer?: NodeJS.Timeout }).timer);
       }
     }
   };
