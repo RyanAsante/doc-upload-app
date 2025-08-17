@@ -24,8 +24,32 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
+// Helper function to get client IP address
+function getClientIP(request: NextRequest): string {
+  // Try to get IP from various headers
+  const forwarded = request.headers.get('x-forwarded-for');
+  const realIP = request.headers.get('x-real-ip');
+  const cfConnectingIP = request.headers.get('cf-connecting-ip');
+  
+  if (forwarded) {
+    // x-forwarded-for can contain multiple IPs, take the first one
+    return forwarded.split(',')[0].trim();
+  }
+  
+  if (realIP) {
+    return realIP;
+  }
+  
+  if (cfConnectingIP) {
+    return cfConnectingIP;
+  }
+  
+  // Fallback to a default identifier
+  return 'unknown';
+}
+
 export function middleware(request: NextRequest) {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = getClientIP(request);
   
   // Rate limiting
   if (isRateLimited(ip)) {
