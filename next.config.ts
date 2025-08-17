@@ -39,12 +39,6 @@ const nextConfig: NextConfig = {
   // Disable server-side source maps in production
   productionBrowserSourceMaps: false,
 
-  // Enable experimental security features
-  experimental: {
-    // Enable more secure cookie handling
-    serverComponentsExternalPackages: [],
-  },
-
   // Security: Disable directory listing
   trailingSlash: false,
 

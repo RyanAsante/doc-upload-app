@@ -6,7 +6,7 @@ import { sanitizeInput, isValidEmail, validatePasswordStrength, addSecurityHeade
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    let { name, email, password } = body;
+    const { name, email, password } = body;
 
     // Input validation
     if (!name || !email || !password) {
@@ -14,11 +14,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Sanitize inputs
-    name = sanitizeInput(name);
-    email = sanitizeInput(email);
+    const sanitizedName = sanitizeInput(name);
+    const sanitizedEmail = sanitizeInput(email);
 
     // Validate email format
-    if (!isValidEmail(email)) {
+    if (!isValidEmail(sanitizedEmail)) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     // Check for existing user
     const existing = await prisma.user.findUnique({
-      where: { email },
+      where: { email: sanitizedEmail },
     });
 
     if (existing) {
@@ -45,15 +45,15 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.create({
       data: {
-        name,
-        email,
+        name: sanitizedName,
+        email: sanitizedEmail,
         password: hashed,
         status: 'APPROVED', // Auto-approve regular users
       },
     });
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: userPassword, ...userWithoutPassword } = user;
 
     const response = NextResponse.json({ 
       message: 'User created successfully', 
