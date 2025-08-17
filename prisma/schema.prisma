@@ -3,43 +3,43 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id       String    @id @default(uuid())
-  name     String
-  email    String    @unique
-  password String
-  role     UserRole  @default(CUSTOMER)
-  status   UserStatus @default(PENDING) // 👈 Pending, Approved, Rejected
-  uploads  Upload[]  // 👈 Relation back to Upload
-  activityLogs ActivityLog[] // 👈 Relation to activity logs
-  createdAt DateTime @default(now())
-  approvedAt DateTime?
-  approvedBy String?
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  password     String
+  role         UserRole      @default(CUSTOMER)
+  approvedAt   DateTime?
+  approvedBy   String?
+  createdAt    DateTime      @default(now())
+  status       UserStatus    @default(PENDING)
+  activityLogs ActivityLog[]
+  uploads      Upload[]
 }
 
 model ActivityLog {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  action    String   // 👈 "UPLOAD", "DELETE", "APPROVE", "REJECT"
-  details   String   // 👈 Description of the action
+  action    String
+  details   String
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Upload {
   id        String   @id @default(uuid())
-  title     String?  // 👈 Optional title for files
+  title     String?
   name      String
   imagePath String
-  fileType  FileType @default(IMAGE) // 👈 Image or Video
+  fileType  FileType @default(IMAGE)
   userId    String?
-  user      User?     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model ManagerApplication {
@@ -47,14 +47,14 @@ model ManagerApplication {
   name      String
   email     String   @unique
   password  String
-  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  status    String   @default("PENDING")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 enum UserRole {
   CUSTOMER
-  MANAGER    // 👈 New level below admin
+  MANAGER
   ADMIN
 }
 

@@ -5,18 +5,13 @@ import { supabase } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
-    console.log('🚀 Upload API called');
-    
     // Get the form data
     const formData = await req.formData();
     const file = formData.get('document') as File;
 
     if (!file) {
-      console.log('❌ No file found in form data');
       return NextResponse.json({ message: 'Missing file' }, { status: 400 });
     }
-
-    console.log('📦 Uploading file:', file.name, 'Size:', file.size);
 
     // Convert file to buffer
     const bytes = await file.arrayBuffer();
@@ -52,13 +47,10 @@ export async function POST(req: NextRequest) {
     const publicUrl = signedUrlData.signedUrl;
 
     const userEmail = req.headers.get('x-user-email') || 'unknown@example.com';
-    console.log('👤 User email from header:', userEmail);
 
     const user = await prisma.user.findUnique({
       where: { email: userEmail },
     });
-    
-    console.log('🔍 User lookup result:', user ? { id: user.id, email: user.email, role: user.role } : 'User not found');
     
     // Determine file type
     const fileType = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
@@ -72,29 +64,20 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log('📁 Upload record created:', upload);
-
     // Log the upload activity
     if (user?.id) {
-      console.log('📝 Creating activity log for user:', user.email, 'Role:', user.role);
-      
       try {
-        const activityLog = await prisma.activityLog.create({
+        await prisma.activityLog.create({
           data: {
             userId: user.id,
             action: 'UPLOAD',
             details: `Uploaded ${fileType.toLowerCase()}: ${file.name}`,
           },
         });
-        console.log('✅ Activity log created successfully:', activityLog);
       } catch (logError) {
-        console.error('❌ Failed to create activity log:', logError);
+        console.error('Failed to create activity log:', logError);
       }
-    } else {
-      console.log('⚠️ No user found for email:', userEmail);
     }
-
-    console.log('✅ Upload successful:', newFileName);
     return NextResponse.json({ message: 'Upload success' }, { status: 200 });
 
   } catch (error) {

@@ -7,14 +7,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, email, password } = body;
 
-    console.log("📥 Signup attempt:", { name, email });
-
     const existing = await prisma.user.findUnique({
       where: { email },
     });
 
     if (existing) {
-      console.warn("⚠️ User already exists:", email);
       return NextResponse.json({ message: 'User already exists' }, { status: 400 });
     }
 
@@ -28,12 +25,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log("✅ User created:", user.id);
-
     return NextResponse.json({ message: 'User created', user }, { status: 201 });
 
   } catch (error) {
-    console.error("❌ Signup error:", error);
+    console.error("Signup error:", error);
     return NextResponse.json({ message: 'Something went wrong during signup' }, { status: 500 });
   }
 }

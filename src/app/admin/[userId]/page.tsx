@@ -50,6 +50,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   const [recordingTime, setRecordingTime] = useState(0);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+  const [isProcessingVideo, setIsProcessingVideo] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -99,43 +100,33 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   // Function to get current manager's ID from cookies
   const getCurrentManagerId = async (): Promise<string | null> => {
     try {
-      console.log('🔍 Getting current manager ID...');
       // Check if we're in a manager context by looking for manager cookies
       const response = await fetch('/api/manager/check-auth');
-      console.log('📡 Manager auth response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('📋 Manager auth data:', data);
         return data.managerId || null;
       } else {
-        console.log('❌ Manager auth failed:', response.status);
-        const errorData = await response.json();
-        console.log('❌ Manager auth error:', errorData);
+        return null;
       }
     } catch (error) {
-      console.error('❌ Error checking manager auth:', error);
+      console.error('Error checking manager auth:', error);
+      return null;
     }
-    return null;
   };
 
   // Function to check if current user is a manager
   const checkCurrentUserIsManager = async (): Promise<boolean> => {
     try {
-      console.log('🔍 Checking if current user is a manager...');
       const response = await fetch('/api/manager/check-auth');
-      console.log('📡 Manager auth check response status:', response.status);
       
       if (response.ok) {
-        const data = await response.json();
-        console.log('📋 Current user auth data:', data);
         return true; // If we can get manager auth, current user is a manager
       } else {
-        console.log('❌ Current user is not a manager');
         return false;
       }
     } catch (error) {
-      console.error('❌ Error checking current user auth:', error);
+      console.error('Error checking current user auth:', error);
       return false;
     }
   };
@@ -166,7 +157,6 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
           }
         });
       } catch {
-        console.log('Back camera failed, trying front camera...');
         // Fallback to front camera with same quality settings
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
@@ -183,7 +173,6 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       
       video.onloadedmetadata = () => {
         video.play().then(() => {
-          console.log('Video playing successfully');
           setCameraOn(true);
         }).catch((err) => {
           console.error('Error playing video:', err);
@@ -266,6 +255,9 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         const blob = new Blob(chunks, { type: 'video/webm' });
         const file = new File([blob], `recorded_video_${Date.now()}.webm`, { type: 'video/webm' });
         
+        // Show processing state
+        setIsProcessingVideo(true);
+        
         // Create a mock event object for the file upload
         const mockEvent = {
           target: { files: [file] }
@@ -339,16 +331,16 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       }
     } catch {
       console.error('Upload failed');
+    } finally {
+      // Hide processing state
+      setIsProcessingVideo(false);
     }
   };
 
   const handleDeleteFile = async (uploadId: string) => {
     try {
-      console.log('🗑️ Delete request - isManager:', isManager, 'user.id:', user?.id);
-      
       // Check if the current user performing the action is a manager
       const currentUserIsManager = await checkCurrentUserIsManager();
-      console.log('👤 Current user is manager:', currentUserIsManager);
       
       let performerId: string | undefined;
       
@@ -357,15 +349,12 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         const managerId = await getCurrentManagerId();
         if (managerId) {
           performerId = managerId;
-          console.log('✅ Manager delete - using manager ID:', managerId);
         } else {
-          console.log('⚠️ No manager ID found, cannot proceed');
           return;
         }
       } else {
         // If it's an admin, use the current user ID
         performerId = user?.id;
-        console.log('👤 Admin delete - using current user ID:', user?.id);
       }
       
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
@@ -391,7 +380,6 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
     try {
       // Check if the current user performing the action is a manager
       const currentUserIsManager = await checkCurrentUserIsManager();
-      console.log('👤 Current user is manager for title update:', currentUserIsManager);
       
       let performerId: string | undefined;
       
@@ -400,15 +388,12 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         const managerId = await getCurrentManagerId();
         if (managerId) {
           performerId = managerId;
-          console.log('✅ Manager title update - using manager ID:', managerId);
         } else {
-          console.log('⚠️ No manager ID found, cannot proceed');
           return;
         }
       } else {
         // If it's an admin, use the current user ID
         performerId = user?.id;
-        console.log('👤 Admin title update - using current user ID:', user?.id);
       }
       
       const response = await fetch(`/api/admin/upload/${uploadId}`, {
@@ -644,6 +629,16 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                       </div>
                     </div>
                   )}
+                  
+                  {/* Video Processing Indicator */}
+                  {isProcessingVideo && (
+                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <span className="text-blue-700 font-medium">Processing video... Please wait</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -652,19 +647,8 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
             <div className="border-t pt-6">
               <h3 className="text-lg font-medium text-gray-900 mb-3">📁 File Upload</h3>
               
-              {/* Video Upload Section */}
-              <div className="mb-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                <h4 className="text-sm font-medium text-emerald-900 mb-2">🎥 Video Upload</h4>
-                <div className="flex items-center space-x-4">
-                  <input
-                    type="file"
-                    onChange={handleFileUpload}
-                    accept="video/*"
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
-                  />
-                </div>
-              </div>
-
+              {/* Note: Video upload removed - videos are captured through camera recording */}
+              
               {/* Document Upload Section */}
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h4 className="text-sm font-medium text-gray-900 mb-2">📄 Document Upload</h4>
@@ -836,32 +820,70 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         </div>
       </div>
 
-      {/* Image/Video Modal */}
+      {/* Enhanced Image/Video Modal */}
       {showImageModal && selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="relative max-w-4xl max-h-full">
-            <button
-              onClick={() => setShowImageModal(false)}
-              className="absolute top-4 right-4 text-white text-2xl hover:text-gray-300 z-10"
-            >
-              ×
-            </button>
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-2 sm:p-4"
+          onClick={() => setShowImageModal(false)}
+        >
+          <div className="relative w-full h-full max-w-7xl max-h-full flex items-center justify-center">
+            {/* Video Player */}
             {selectedImage.fileType === 'VIDEO' ? (
-              <video
-                src={selectedImage.imagePath}
-                controls
-                autoPlay
-                className="max-w-full max-h-full rounded-lg"
-              />
+              <div className="relative w-full h-full flex items-center justify-center">
+                <video
+                  src={selectedImage.imagePath}
+                  className="w-full h-full max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  controls
+                  autoPlay
+                  preload="metadata"
+                  onClick={(e) => e.stopPropagation()}
+                  controlsList="nodownload"
+                  style={{
+                    maxHeight: 'calc(100vh - 2rem)',
+                    maxWidth: 'calc(100vw - 2rem)'
+                  }}
+                />
+                {/* Video Controls Overlay */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-full text-sm">
+                  📹 Video Player
+                </div>
+              </div>
             ) : (
+              /* Image Viewer */
               <img
                 src={selectedImage.imagePath}
                 alt={selectedImage.title || selectedImage.name}
-                className="max-w-full max-h-full rounded-lg"
+                className="w-full h-full max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  maxHeight: 'calc(100vh - 2rem)',
+                  maxWidth: 'calc(100vw - 2rem)'
+                }}
               />
             )}
-            <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-2 rounded">
-              <p className="font-medium">{selectedImage.title || selectedImage.name}</p>
+            
+            {/* Close Button */}
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-2 sm:p-3 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-110"
+              aria-label="Close modal"
+            >
+              <svg className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            {/* File Info Overlay */}
+            <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
+              <p className="font-medium text-sm sm:text-base">{selectedImage.title || selectedImage.name}</p>
+              <p className="text-xs text-gray-300 mt-1">
+                {selectedImage.fileType} • {new Date(selectedImage.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+            
+            {/* Mobile-friendly Backdrop Click Hint */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded-full sm:hidden">
+              Tap outside to close
             </div>
           </div>
         </div>

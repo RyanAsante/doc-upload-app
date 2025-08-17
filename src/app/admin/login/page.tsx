@@ -34,7 +34,10 @@ export default function AdminLoginPage() {
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
+          <div 
+            className="flex items-center justify-center space-x-2 mb-4 cursor-pointer hover:scale-105 transition-transform duration-200"
+            onClick={() => router.push('/')}
+          >
             <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-lg">V</span>
             </div>

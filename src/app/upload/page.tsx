@@ -43,7 +43,6 @@ const handleLogout = () => {
           frameRate: { ideal: 30, min: 24 } // Smooth video
         } 
       });
-      console.log("Stream started:", stream);
   
       if (videoRef.current) {
         videoRef.current.srcObject = stream;

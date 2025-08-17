@@ -232,37 +232,63 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Image/Video Modal */}
+      {/* Enhanced Image/Video Modal */}
       {showImageModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-2 sm:p-4"
           onClick={() => setShowImageModal(false)}
         >
-          <div className="max-w-4xl max-h-full relative">
-            {selectedImage.includes('.mp4') || selectedImage.includes('.mov') || selectedImage.includes('.avi') ? (
-              <video
-                src={selectedImage}
-                className="max-w-full max-h-full object-contain"
-                controls
-                autoPlay
-                onClick={(e) => e.stopPropagation()}
-              />
+          <div className="relative w-full h-full max-w-7xl max-h-full flex items-center justify-center">
+            {/* Video Player */}
+            {selectedImage.includes('.mp4') || selectedImage.includes('.mov') || selectedImage.includes('.avi') || selectedImage.includes('.webm') ? (
+              <div className="relative w-full h-full flex items-center justify-center">
+                <video
+                  src={selectedImage}
+                  className="w-full h-full max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  controls
+                  autoPlay
+                  preload="metadata"
+                  onClick={(e) => e.stopPropagation()}
+                  controlsList="nodownload"
+                  style={{
+                    maxHeight: 'calc(100vh - 2rem)',
+                    maxWidth: 'calc(100vw - 2rem)'
+                  }}
+                />
+                {/* Video Controls Overlay */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-full text-sm">
+                  📹 Video Player
+                </div>
+              </div>
             ) : (
+              /* Image Viewer */
               <img
                 src={selectedImage}
                 alt="Full size"
-                className="max-w-full max-h-full object-contain"
+                className="w-full h-full max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
+                style={{
+                  maxHeight: 'calc(100vh - 2rem)',
+                  maxWidth: 'calc(100vw - 2rem)'
+                }}
               />
             )}
+            
+            {/* Close Button */}
             <button
               onClick={() => setShowImageModal(false)}
-              className="absolute top-4 right-4 bg-white bg-opacity-90 rounded-full p-2 hover:bg-opacity-100 transition-all"
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-2 sm:p-3 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-110"
+              aria-label="Close modal"
             >
-              <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+            
+            {/* Mobile-friendly Backdrop Click Hint */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded-full sm:hidden">
+              Tap outside to close
+            </div>
           </div>
         </div>
       )}

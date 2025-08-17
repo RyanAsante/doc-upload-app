@@ -48,12 +48,10 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'users' | 'pending' | 'activity'>('users');
 
   useEffect(() => {
-    console.log('Admin page mounted, fetching data...');
     fetchData();
     
     // Set up auto-refresh every 2 minutes (120000ms)
     const refreshInterval = setInterval(() => {
-      console.log('Auto-refreshing admin data...');
       fetchData();
     }, 120000);
     
@@ -63,20 +61,14 @@ export default function AdminPage() {
 
   const fetchData = async () => {
     try {
-      console.log('Fetching data...');
       const [usersRes, pendingRes, activityRes] = await Promise.all([
         fetch('/api/admin/users'),
         fetch('/api/admin/pending-managers'),
         fetch('/api/admin/manager-activity')
       ]);
 
-      console.log('Users response status:', usersRes.status);
-      console.log('Pending response status:', pendingRes.status);
-      console.log('Activity response status:', activityRes.status);
-
       if (usersRes.ok) {
         const usersData = await usersRes.json();
-        console.log('Users data received:', usersData);
         setUsers(usersData.users || []);
       } else {
         console.error('Failed to fetch users:', usersRes.status);
@@ -84,7 +76,6 @@ export default function AdminPage() {
 
       if (pendingRes.ok) {
         const pendingData = await pendingRes.json();
-        console.log('Pending managers data received:', pendingData);
         setPendingManagers(pendingData.pendingManagers || []);
       } else {
         console.error('Failed to fetch pending managers:', pendingRes.status);
@@ -92,7 +83,6 @@ export default function AdminPage() {
 
       if (activityRes.ok) {
         const activityData = await activityRes.json();
-        console.log('Manager activity data received:', activityData);
         setManagerActivity(activityData.managerActivity || []);
       } else {
         console.error('Failed to fetch manager activity:', activityRes.status);
@@ -127,7 +117,6 @@ export default function AdminPage() {
 
   const handleApproveManager = async (applicationId: string, action: 'APPROVE' | 'REJECT') => {
     try {
-      console.log(`Starting ${action.toLowerCase()} process for application:`, applicationId);
       setLoading(true);
       
       const requestBody = {
@@ -136,28 +125,18 @@ export default function AdminPage() {
         adminId: 'admin', // You might want to get the actual admin ID
       };
       
-      console.log('Sending request with body:', requestBody);
-      
       const response = await fetch('/api/admin/approve-manager', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
       if (response.ok) {
-        const result = await response.json();
-        console.log('Manager action result:', result);
-        
         // Show success message
         alert(`${action === 'APPROVE' ? 'Approved' : 'Rejected'} manager successfully!`);
         
         // Refresh the data to update the UI
-        console.log('Refreshing data...');
         await fetchData();
-        console.log('Data refresh completed');
       } else {
         const errorData = await response.json();
         console.error('Failed to approve/reject manager:', errorData);
@@ -238,10 +217,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-      {/* Debug info */}
-      <div className="bg-yellow-100 p-2 text-xs">
-        Debug: Active tab: {activeTab}, Users: {users.length}, Pending: {pendingManagers.length}, Activity: {managerActivity.length}
-      </div>
+
 
       {/* Header */}
       <div className="bg-white/70 backdrop-blur-sm border-b border-gray-200/50">

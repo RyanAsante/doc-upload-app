@@ -6,24 +6,18 @@ import { cookies } from 'next/headers';
 
 export async function POST(req: NextRequest) {
   try {
-    console.log('🚀 Manager Upload API called');
-    
     // Check if manager is authenticated
     const cookieStore = await cookies();
     const managerAuth = cookieStore.get('manager-auth');
     const managerEmail = cookieStore.get('manager-email');
     
     if (!managerAuth || managerAuth.value !== 'true') {
-      console.log('❌ Manager not authenticated');
       return NextResponse.json({ message: 'Manager not authenticated' }, { status: 401 });
     }
     
     if (!managerEmail) {
-      console.log('❌ Manager email not found in cookie');
       return NextResponse.json({ message: 'Manager email not found' }, { status: 401 });
     }
-    
-    console.log('👤 Manager email from cookie:', managerEmail.value);
     
     // Get the form data
     const formData = await req.formData();
@@ -31,17 +25,12 @@ export async function POST(req: NextRequest) {
     const customerEmail = formData.get('customerEmail') as string;
 
     if (!file) {
-      console.log('❌ No file found in form data');
       return NextResponse.json({ message: 'Missing file' }, { status: 400 });
     }
 
     if (!customerEmail) {
-      console.log('❌ Missing customer email');
       return NextResponse.json({ message: 'Missing customer email' }, { status: 400 });
     }
-
-    console.log('📦 Uploading file:', file.name, 'Size:', file.size);
-    console.log('👤 Customer email:', customerEmail);
 
     // Convert file to buffer
     const bytes = await file.arrayBuffer();
@@ -82,7 +71,6 @@ export async function POST(req: NextRequest) {
     });
     
     if (!customer) {
-      console.log('❌ Customer not found:', customerEmail);
       return NextResponse.json({ message: 'Customer not found' }, { status: 404 });
     }
     
@@ -92,7 +80,6 @@ export async function POST(req: NextRequest) {
     });
 
     if (!manager) {
-      console.log('❌ Manager not found:', managerEmail.value);
       return NextResponse.json({ message: 'Manager not found' }, { status: 404 });
     }
     
@@ -108,23 +95,18 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log('📁 Upload record created:', upload);
-
     // Create a simple activity log entry
     try {
-      const activityLog = await prisma.activityLog.create({
+      await prisma.activityLog.create({
         data: {
           userId: manager.id, // Use manager ID
           action: 'UPLOAD',
           details: `File "${file.name}" uploaded by manager ${manager.name} (${manager.email}) for customer ${customer.name} (${customer.email})`,
         },
       });
-      console.log('✅ Activity log created successfully:', activityLog);
     } catch (logError) {
-      console.error('❌ Failed to create activity log:', logError);
+      console.error('Failed to create activity log:', logError);
     }
-
-    console.log('✅ Manager upload successful:', newFileName);
     return NextResponse.json({ message: 'Upload success' }, { status: 200 });
 
   } catch (error) {

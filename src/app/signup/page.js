@@ -13,7 +13,6 @@ export default function SignupPage() {
   };
 
   const handleSubmit = async () => {
-    console.log("Submitting signup form...");
     try {
       const res = await fetch('/api/signup', {
         method: 'POST',

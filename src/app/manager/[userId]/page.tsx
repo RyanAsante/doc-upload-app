@@ -38,6 +38,7 @@ export default function ManagerUserPage() {
   const [recordingTime, setRecordingTime] = useState(0);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+  const [isProcessingVideo, setIsProcessingVideo] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -77,8 +78,6 @@ export default function ManagerUserPage() {
         throw new Error('Camera not supported in this browser');
       }
       
-      console.log('Video element found:', videoRef.current);
-      
       // Request camera access with back camera preference and document-friendly dimensions
       let stream;
       try {
@@ -93,7 +92,6 @@ export default function ManagerUserPage() {
           } 
         });
       } catch (err) {
-        console.log('Back camera not available, trying front camera...');
         // Fallback to front camera if back camera fails with same quality
         stream = await navigator.mediaDevices.getUserMedia({ 
           video: {
@@ -106,8 +104,6 @@ export default function ManagerUserPage() {
         });
       }
       
-      console.log('Camera stream obtained:', stream);
-      
       const video = videoRef.current;
       
       // Set the stream as the video source
@@ -119,11 +115,8 @@ export default function ManagerUserPage() {
       
       // Wait for video to be ready
       video.onloadedmetadata = () => {
-        console.log('Video metadata loaded, dimensions:', video.videoWidth, 'x', video.videoHeight);
-        
         // Force video to play
         video.play().then(() => {
-          console.log('Video playing successfully');
           setCameraOn(true);
           setCameraStarting(false);
           setUploadStatus('Camera ready! Position document in view.');
@@ -142,16 +135,6 @@ export default function ManagerUserPage() {
         console.error('Video error:', err);
         setCameraStarting(false);
         setUploadStatus('Camera error. Please try again.');
-      };
-      
-      // Handle video load start
-      video.onloadstart = () => {
-        console.log('Video load started');
-      };
-      
-      // Handle video can play
-      video.oncanplay = () => {
-        console.log('Video can play');
       };
       
     } catch (err) {
@@ -195,6 +178,10 @@ export default function ManagerUserPage() {
       recorder.onstop = () => {
         const blob = new Blob(chunks, { type: 'video/webm' });
         const file = new File([blob], `recorded_video_${Date.now()}.webm`, { type: 'video/webm' });
+        
+        // Show processing state
+        setIsProcessingVideo(true);
+        
         handleFileUpload(file);
         setRecordedChunks([]);
         setIsRecording(false);
@@ -299,6 +286,7 @@ export default function ManagerUserPage() {
       setUploadStatus('An error occurred during upload.');
     } finally {
       setUploading(false);
+      setIsProcessingVideo(false);
       setTimeout(() => setUploadStatus(''), 3000);
     }
   };
@@ -575,35 +563,27 @@ export default function ManagerUserPage() {
                     </div>
                   </div>
                 )}
+                
+                {/* Video Processing Indicator */}
+                {isProcessingVideo && (
+                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <span className="text-blue-700 font-medium">Processing video... This may take some time</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {/* File Upload Section - Updated with enhanced UI components */}
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-3">📁 File Upload</h3>
-            
-            {/* Video Upload Section */}
-            <div className="mb-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-              <h4 className="text-sm font-medium text-emerald-900 mb-2">🎥 Video Upload</h4>
-              <div className="flex items-center space-x-4">
-                <input
-                  type="file"
-                  onChange={handleFileUpload}
-                  disabled={uploading}
-                  accept="video/*"
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
-                />
-                {uploading && (
-                  <div className="flex items-center space-x-2 text-emerald-600">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600"></div>
-                    <span>Uploading...</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Document Upload Section */}
+            {/* File Upload Section - Updated with enhanced UI components */}
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">📁 File Upload</h3>
+              
+              {/* Note: Video upload removed - videos are captured through camera recording */}
+              
+              {/* Document Upload Section */}
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
               <h4 className="text-sm font-medium text-gray-900 mb-2">📄 Document Upload</h4>
               <div className="flex items-center space-x-4">
@@ -751,19 +731,63 @@ export default function ManagerUserPage() {
         </div>
       </div>
 
-      {/* Image Modal */}
+      {/* Enhanced Image/Video Modal */}
       {showImageModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-2 sm:p-4"
           onClick={() => setShowImageModal(false)}
         >
-          <div className="max-w-4xl max-h-full">
-            <img
-              src={selectedImage}
-              alt="Full size"
-              className="max-w-full max-h-full object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
+          <div className="relative w-full h-full max-w-7xl max-h-full flex items-center justify-center">
+            {/* Video Player */}
+            {selectedImage.includes('.mp4') || selectedImage.includes('.mov') || selectedImage.includes('.avi') || selectedImage.includes('.webm') ? (
+              <div className="relative w-full h-full flex items-center justify-center">
+                <video
+                  src={selectedImage}
+                  className="w-full h-full max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  controls
+                  autoPlay
+                  preload="metadata"
+                  onClick={(e) => e.stopPropagation()}
+                  controlsList="nodownload"
+                  style={{
+                    maxHeight: 'calc(100vh - 2rem)',
+                    maxWidth: 'calc(100vw - 2rem)'
+                  }}
+                />
+                {/* Video Controls Overlay */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-full text-sm">
+                  📹 Video Player
+                </div>
+              </div>
+            ) : (
+              /* Image Viewer */
+              <img
+                src={selectedImage}
+                alt="Full size"
+                className="w-full h-full max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+                                  style={{
+                    maxHeight: 'calc(100vh - 2rem)',
+                    maxWidth: 'calc(100vw - 2rem)'
+                  }}
+              />
+            )}
+            
+            {/* Close Button */}
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-2 sm:p-3 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-110"
+              aria-label="Close modal"
+            >
+              <svg className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            {/* Mobile-friendly Backdrop Click Hint */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded-full sm:hidden">
+              Tap outside to close
+            </div>
           </div>
         </div>
       )}

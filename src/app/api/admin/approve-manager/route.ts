@@ -5,8 +5,6 @@ export async function POST(req: NextRequest) {
   try {
     const { applicationId, action, adminId } = await req.json();
 
-    console.log('Approval request:', { applicationId, action, adminId });
-
     if (!applicationId || !action || !adminId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
@@ -24,8 +22,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
-    console.log('Found application:', application);
-
     if (action === 'APPROVE') {
       try {
         // Create the actual manager user
@@ -41,14 +37,10 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        console.log('Created manager user:', user);
-
         // Delete the application
         await prisma.managerApplication.delete({
           where: { id: applicationId },
         });
-
-        console.log('Application deleted');
 
         return NextResponse.json({ 
           success: true, 
@@ -68,7 +60,7 @@ export async function POST(req: NextRequest) {
           data: { status: 'REJECTED' },
         });
 
-        console.log('Application rejected');
+
 
         return NextResponse.json({ 
           success: true, 
