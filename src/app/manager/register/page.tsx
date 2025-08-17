@@ -13,6 +13,8 @@ export default function ManagerRegisterPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<{ isValid: boolean; errors: string[] }>({ isValid: false, errors: [] });
+  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,9 +29,9 @@ export default function ManagerRegisterPage() {
       return;
     }
 
-    // Validate password length
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    // Validate password strength
+    if (!passwordStrength.isValid) {
+      setError('Password does not meet security requirements');
       setLoading(false);
       return;
     }
@@ -53,7 +55,15 @@ export default function ManagerRegisterPage() {
         // Redirect to login after 3 seconds
         setTimeout(() => router.push('/manager/login'), 3000);
       } else {
-        setError(data.error || 'Registration failed');
+        // Handle different types of errors
+        if (data.error && data.details) {
+          // Password strength error with details
+          setError(`${data.error}\n\nRequirements:\n${data.details.map((req: string) => `• ${req}`).join('\n')}`);
+        } else if (data.error) {
+          setError(data.error);
+        } else {
+          setError('Registration failed');
+        }
       }
     } catch (err) {
       setError('An error occurred during registration');
@@ -67,6 +77,37 @@ export default function ManagerRegisterPage() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    
+    // Check password strength in real-time
+    if (e.target.name === 'password') {
+      const password = e.target.value;
+      const errors: string[] = [];
+      
+      if (password.length < 8) {
+        errors.push('At least 8 characters long');
+      }
+      
+      if (!/[A-Z]/.test(password)) {
+        errors.push('One uppercase letter (A-Z)');
+      }
+      
+      if (!/[a-z]/.test(password)) {
+        errors.push('One lowercase letter (a-z)');
+      }
+      
+      if (!/\d/.test(password)) {
+        errors.push('One number (0-9)');
+      }
+      
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        errors.push('One special character (!@#$%^&*)');
+      }
+      
+      setPasswordStrength({
+        isValid: errors.length === 0,
+        errors: errors
+      });
+    }
   };
 
   return (
@@ -132,13 +173,55 @@ export default function ManagerRegisterPage() {
                 id="password"
                 name="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="Create a strong password"
                 value={formData.password}
                 onChange={handleChange}
                 required
-                minLength={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
+                onFocus={() => setShowPasswordRequirements(true)}
+                onBlur={() => setShowPasswordRequirements(false)}
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 ${
+                  formData.password ? (passwordStrength.isValid ? 'border-green-300 focus:ring-green-500' : 'border-red-300 focus:ring-emerald-500') : 'border-gray-300 focus:ring-emerald-500'
+                }`}
               />
+              
+              {/* Password Requirements */}
+              {showPasswordRequirements && (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm font-medium text-blue-800 mb-2">Password Requirements:</p>
+                  <ul className="text-xs text-blue-700 space-y-1">
+                    <li className={`flex items-center ${formData.password.length >= 8 ? 'text-green-600' : ''}`}>
+                      {formData.password.length >= 8 ? '✅' : '⭕'} At least 8 characters
+                    </li>
+                    <li className={`flex items-center ${/[A-Z]/.test(formData.password) ? 'text-green-600' : ''}`}>
+                      {/[A-Z]/.test(formData.password) ? '✅' : '⭕'} One uppercase letter (A-Z)
+                    </li>
+                    <li className={`flex items-center ${/[a-z]/.test(formData.password) ? 'text-green-600' : ''}`}>
+                      {/[a-z]/.test(formData.password) ? '✅' : '⭕'} One lowercase letter (a-z)
+                    </li>
+                    <li className={`flex items-center ${/\d/.test(formData.password) ? 'text-green-600' : ''}`}>
+                      {/\d/.test(formData.password) ? '✅' : '⭕'} One number (0-9)
+                    </li>
+                    <li className={`flex items-center ${/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'text-green-600' : ''}`}>
+                      {/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? '✅' : '⭕'} One special character (!@#$%^&*)
+                    </li>
+                  </ul>
+                </div>
+              )}
+              
+              {/* Password Strength Indicator */}
+              {formData.password && (
+                <div className={`mt-2 p-2 rounded-lg text-sm ${
+                  passwordStrength.isValid 
+                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {passwordStrength.isValid ? (
+                    <span className="flex items-center">✅ Password meets all requirements</span>
+                  ) : (
+                    <span className="flex items-center">⚠️ Password needs: {passwordStrength.errors.join(', ')}</span>
+                  )}
+                </div>
+              )}
             </div>
 
             <div>
@@ -153,21 +236,37 @@ export default function ManagerRegisterPage() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                minLength={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 ${
+                  formData.confirmPassword ? (formData.password === formData.confirmPassword ? 'border-green-300' : 'border-red-300') : 'border-gray-300'
+                }`}
               />
+              
+              {/* Password Match Indicator */}
+              {formData.confirmPassword && (
+                <div className={`mt-2 p-2 rounded-lg text-sm ${
+                  formData.password === formData.confirmPassword
+                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {formData.password === formData.confirmPassword ? (
+                    <span className="flex items-center">✅ Passwords match</span>
+                  ) : (
+                    <span className="flex items-center">❌ Passwords do not match</span>
+                  )}
+                </div>
+              )}
             </div>
 
             <button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || !passwordStrength.isValid || !formData.name || !formData.email || formData.password !== formData.confirmPassword}
               className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Submitting Application...' : 'Submit Manager Application'}
             </button>
             
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 whitespace-pre-line">
                 <p className="text-red-600 text-sm">{error}</p>
               </div>
             )}
@@ -182,12 +281,12 @@ export default function ManagerRegisterPage() {
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Don&apos;t have a manager account?{' '}
+              Already have a manager account?{' '}
               <button
-                onClick={() => router.push('/manager/register')}
+                onClick={() => router.push('/manager/login')}
                 className="text-emerald-600 hover:text-emerald-700 font-medium"
               >
-                Apply here
+                Sign in here
               </button>
             </p>
             <button

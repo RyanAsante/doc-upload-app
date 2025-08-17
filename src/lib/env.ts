@@ -55,7 +55,7 @@ export const SECURITY_CONFIG = {
   MAX_FILES_PER_USER: 100,
   
   // Password requirements
-  MIN_PASSWORD_LENGTH: 8,
+  MIN_PASSWORD_LENGTH: 8, // Strong password requirement for security
   PASSWORD_SALT_ROUNDS: 12,
   
   // CSRF protection

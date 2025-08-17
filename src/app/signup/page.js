@@ -6,10 +6,43 @@ import { useRouter } from 'next/navigation';
 export default function SignupPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [message, setMessage] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState({ isValid: false, errors: [] });
+  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
   const router = useRouter();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    
+    // Check password strength in real-time
+    if (e.target.name === 'password') {
+      const password = e.target.value;
+      const errors = [];
+      
+      if (password.length < 8) {
+        errors.push('At least 8 characters long');
+      }
+      
+      if (!/[A-Z]/.test(password)) {
+        errors.push('One uppercase letter (A-Z)');
+      }
+      
+      if (!/[a-z]/.test(password)) {
+        errors.push('One lowercase letter (a-z)');
+      }
+      
+      if (!/\d/.test(password)) {
+        errors.push('One number (0-9)');
+      }
+      
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        errors.push('One special character (!@#$%^&*)');
+      }
+      
+      setPasswordStrength({
+        isValid: errors.length === 0,
+        errors: errors
+      });
+    }
   };
 
   const handleSubmit = async () => {
@@ -29,7 +62,15 @@ export default function SignupPage() {
         // ✅ Redirect to dashboard
         router.push('/dashboard');
       } else {
-        setMessage(`❌ ${data.message}`);
+        // Handle different types of errors
+        if (data.error && data.details) {
+          // Password strength error with details
+          setMessage(`❌ ${data.error}\n\nRequirements:\n${data.details.map(req => `• ${req}`).join('\n')}`);
+        } else if (data.error) {
+          setMessage(`❌ ${data.error}`);
+        } else {
+          setMessage(`❌ ${data.message || 'Signup failed'}`);
+        }
       }
     } catch {
       setMessage('❌ Something went wrong');
@@ -97,21 +138,69 @@ export default function SignupPage() {
                 name="password"
                 value={form.password}
                 onChange={handleChange}
-                placeholder="Create a password"
+                placeholder="Create a strong password"
                 type="password"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
+                onFocus={() => setShowPasswordRequirements(true)}
+                onBlur={() => setShowPasswordRequirements(false)}
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 ${
+                  form.password ? (passwordStrength.isValid ? 'border-green-300 focus:ring-green-500' : 'border-red-300 focus:ring-red-500') : 'border-gray-300 focus:ring-blue-500'
+                }`}
               />
+              
+              {/* Password Requirements */}
+              {showPasswordRequirements && (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm font-medium text-blue-800 mb-2">Password Requirements:</p>
+                  <ul className="text-xs text-blue-700 space-y-1">
+                    <li className={`flex items-center ${form.password.length >= 8 ? 'text-green-600' : ''}`}>
+                      {form.password.length >= 8 ? '✅' : '⭕'} At least 8 characters
+                    </li>
+                    <li className={`flex items-center ${/[A-Z]/.test(form.password) ? 'text-green-600' : ''}`}>
+                      {/[A-Z]/.test(form.password) ? '✅' : '⭕'} One uppercase letter (A-Z)
+                    </li>
+                    <li className={`flex items-center ${/[a-z]/.test(form.password) ? 'text-green-600' : ''}`}>
+                      {/[a-z]/.test(form.password) ? '✅' : '⭕'} One lowercase letter (a-z)
+                    </li>
+                    <li className={`flex items-center ${/\d/.test(form.password) ? 'text-green-600' : ''}`}>
+                      {/\d/.test(form.password) ? '✅' : '⭕'} One number (0-9)
+                    </li>
+                    <li className={`flex items-center ${/[!@#$%^&*(),.?":{}|<>]/.test(form.password) ? 'text-green-600' : ''}`}>
+                      {/[!@#$%^&*(),.?":{}|<>]/.test(form.password) ? '✅' : '⭕'} One special character (!@#$%^&*)
+                    </li>
+                  </ul>
+                </div>
+              )}
+              
+              {/* Password Strength Indicator */}
+              {form.password && (
+                <div className={`mt-2 p-2 rounded-lg text-sm ${
+                  passwordStrength.isValid 
+                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {passwordStrength.isValid ? (
+                    <span className="flex items-center">✅ Password meets all requirements</span>
+                  ) : (
+                    <span className="flex items-center">⚠️ Password needs: {passwordStrength.errors.join(', ')}</span>
+                  )}
+                </div>
+              )}
             </div>
 
             <button
               onClick={handleSubmit}
-              className="w-full bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-lg"
+              disabled={!passwordStrength.isValid || !form.name || !form.email}
+              className={`w-full py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg ${
+                passwordStrength.isValid && form.name && form.email
+                  ? 'bg-black text-white hover:bg-gray-800'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
               Create account
             </button>
             
             {message && (
-              <div className={`rounded-xl p-4 ${
+              <div className={`rounded-xl p-4 whitespace-pre-line ${
                 message.includes('❌') 
                   ? 'bg-red-50 border border-red-200' 
                   : 'bg-green-50 border border-green-200'
