@@ -23,8 +23,9 @@ export async function sendVerificationEmail(
 
     const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`;
     
-    await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'noreply@yourdomain.com',
+    // Use the correct Resend API method
+    const result = await resend.emails.send({
+      from: process.env.FROM_EMAIL || 'noreply@resend.dev',
       to: [email],
       subject: 'Verify Your Email - Doc Upload App',
       html: `
@@ -47,10 +48,23 @@ export async function sendVerificationEmail(
         </div>
       `,
     });
+
+    // Check if email was sent successfully
+    if (result && result.data && !result.error) {
+      console.log('Verification email sent successfully:', result.data.id);
+      return true;
+    } else {
+      console.error('Failed to send verification email:', result?.error);
+      return false;
+    }
     
-    return true;
   } catch (error) {
     console.error('Error sending verification email:', error);
+    // Log more detailed error information
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     return false;
   }
 }
@@ -69,8 +83,9 @@ export async function sendPasswordResetEmail(
 
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
     
-    await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'noreply@yourdomain.com',
+    // Use the correct Resend API method
+    const result = await resend.emails.send({
+      from: process.env.FROM_EMAIL || 'noreply@resend.dev',
       to: [email],
       subject: 'Reset Your Password - Doc Upload App',
       html: `
@@ -93,7 +108,15 @@ export async function sendPasswordResetEmail(
         </div>
       `,
     });
-    return true;
+
+    // Check if email was sent successfully
+    if (result && result.data && !result.error) {
+      console.log('Password reset email sent successfully:', result.data.id);
+      return true;
+    } else {
+      console.error('Failed to send password reset email:', result?.error);
+      return false;
+    }
   } catch (error) {
     console.error('Error sending password reset email:', error);
     return false;
