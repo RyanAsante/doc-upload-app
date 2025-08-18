@@ -11,8 +11,12 @@ export default function HomePage() {
       <nav className="px-4 sm:px-6 py-4 sm:py-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 sm:w-8 sm:h-8 bg-gradient-to-r from-teal-600 to-teal-700 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-base sm:text-sm">A</span>
+            <div className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center overflow-hidden">
+              <img 
+                src="/uploads/AIS.jpg" 
+                alt="Asante International Shipping Logo" 
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="text-2xl sm:text-xl font-bold bg-gradient-to-r from-teal-600 to-teal-700 bg-clip-text text-transparent">
               Asante International Shipping
@@ -161,8 +165,12 @@ export default function HomePage() {
       <footer className="bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-6 h-6 bg-gradient-to-r from-teal-600 to-teal-700 rounded flex items-center justify-center">
-              <span className="text-white font-bold text-xs">A</span>
+            <div className="w-6 h-6 rounded flex items-center justify-center overflow-hidden">
+              <img 
+                src="/uploads/AIS.jpg" 
+                alt="Asante International Shipping Logo" 
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="text-lg font-semibold text-gray-900">Asante International Shipping</span>
           </div>

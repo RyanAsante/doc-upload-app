@@ -47,8 +47,12 @@ export default function ForgotPasswordPage() {
         {/* Header */}
         <div className="text-center">
           <Link href="/" className="inline-flex items-center space-x-2 hover:opacity-80 transition-opacity">
-            <div className="w-12 h-12 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">V</span>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden">
+              <img 
+                src="/uploads/AIS.jpg" 
+                alt="Asante International Shipping Logo" 
+                className="w-full h-full object-cover rounded-xl"
+              />
             </div>
             <span className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
               Asante International Shipping

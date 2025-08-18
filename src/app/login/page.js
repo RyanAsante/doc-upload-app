@@ -36,8 +36,12 @@ export default function LoginPage() {
             onClick={() => router.push('/')}
             className="flex items-center justify-center space-x-2 mb-4 hover:opacity-80 transition-opacity mx-auto"
           >
-            <div className="w-10 h-10 bg-gradient-to-r from-teal-600 to-teal-700 rounded-xl flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-lg">A</span>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <img 
+                src="/uploads/AIS.jpg" 
+                alt="Asante International Shipping Logo" 
+                className="w-full h-full object-cover rounded-xl"
+              />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-teal-700 bg-clip-text text-transparent whitespace-nowrap">
               Asante International Shipping
