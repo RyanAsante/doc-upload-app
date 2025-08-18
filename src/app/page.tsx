@@ -15,7 +15,7 @@ export default function HomePage() {
               <span className="text-white font-bold text-base sm:text-sm">V</span>
             </div>
             <span className="text-2xl sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              VaultDrop
+              Asante International Shipping
             </span>
           </div>
           <div className="flex flex-wrap justify-center sm:justify-end gap-3 sm:gap-4">
@@ -132,7 +132,7 @@ export default function HomePage() {
             Ready to get started?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Join thousands of users who trust VaultDrop for their document management needs.
+            Join thousands of users who trust Asante International Shipping for their document management needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -164,7 +164,7 @@ export default function HomePage() {
             <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded flex items-center justify-center">
               <span className="text-white font-bold text-xs">V</span>
             </div>
-            <span className="text-lg font-semibold text-gray-900">VaultDrop</span>
+            <span className="text-lg font-semibold text-gray-900">Asante International Shipping</span>
           </div>
           <p className="text-gray-600">
             Secure document management for the modern world.

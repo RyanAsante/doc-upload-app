@@ -48,7 +48,7 @@ export default function ManagerLoginPage() {
               <span className="text-white font-bold text-lg">V</span>
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent whitespace-nowrap">
-              VaultDrop
+              Asante International Shipping
             </span>
           </button>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Manager Access</h1>

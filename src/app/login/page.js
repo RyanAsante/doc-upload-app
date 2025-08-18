@@ -40,7 +40,7 @@ export default function LoginPage() {
               <span className="text-white font-bold text-lg">V</span>
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-              VaultDrop
+              Asante International Shipping
             </span>
           </button>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>

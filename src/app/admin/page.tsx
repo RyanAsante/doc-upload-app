@@ -232,7 +232,7 @@ export default function AdminPage() {
                   <span className="text-white font-bold text-xl sm:text-lg">V</span>
                 </div>
                 <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                  VaultDrop
+                  Asante International Shipping
                 </span>
               </button>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
