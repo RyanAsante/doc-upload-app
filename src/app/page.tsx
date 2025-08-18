@@ -11,10 +11,10 @@ export default function HomePage() {
       <nav className="px-4 sm:px-6 py-4 sm:py-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-base sm:text-sm">V</span>
+            <div className="w-10 h-10 sm:w-8 sm:h-8 bg-gradient-to-r from-teal-600 to-teal-700 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-base sm:text-sm">A</span>
             </div>
-            <span className="text-2xl sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-2xl sm:text-xl font-bold bg-gradient-to-r from-teal-600 to-teal-700 bg-clip-text text-transparent">
               Asante International Shipping
             </span>
           </div>
@@ -50,19 +50,19 @@ export default function HomePage() {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-teal-600/10 to-teal-700/10"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-teal-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
           <div className="text-center">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium mb-6 sm:mb-8">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-sm font-medium mb-6 sm:mb-8">
               ✨ Secure document management for modern teams
             </div>
             
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
               Store your documents
-              <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-teal-600 to-teal-700 bg-clip-text text-transparent">
                 with confidence
               </span>
             </h1>
@@ -126,7 +126,7 @@ export default function HomePage() {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 py-20">
+      <div className="bg-gradient-to-r from-teal-600 to-teal-700 py-20">
         <div className="max-w-4xl mx-auto text-center px-6">
           <h2 className="text-4xl font-bold text-white mb-6">
             Ready to get started?
@@ -137,7 +137,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => router.push('/signup')}
-              className="bg-white text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 shadow-lg"
+              className="bg-white text-teal-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
               Create your account
             </button>
@@ -161,8 +161,8 @@ export default function HomePage() {
       <footer className="bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded flex items-center justify-center">
-              <span className="text-white font-bold text-xs">V</span>
+            <div className="w-6 h-6 bg-gradient-to-r from-teal-600 to-teal-700 rounded flex items-center justify-center">
+              <span className="text-white font-bold text-xs">A</span>
             </div>
             <span className="text-lg font-semibold text-gray-900">Asante International Shipping</span>
           </div>
