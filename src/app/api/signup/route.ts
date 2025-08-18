@@ -1,6 +1,6 @@
 import { hash } from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { railwayPrisma } from '@/lib/prisma-railway';
 import { sanitizeInput, isValidEmail, validatePasswordStrength, addSecurityHeaders } from '@/lib/security';
 import { generateVerificationToken, sendVerificationEmail } from '@/lib/email';
 
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check for existing user
-    const existing = await prisma.user.findUnique({
+    const existing = await railwayPrisma.user.findUnique({
       where: { email: sanitizedEmail },
     });
 
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     const verificationToken = generateVerificationToken();
     const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    const user = await prisma.user.create({
+    const user = await railwayPrisma.user.create({
       data: {
         name: sanitizedName,
         email: sanitizedEmail,
