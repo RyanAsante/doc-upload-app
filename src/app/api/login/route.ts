@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-import { railwayPrisma } from '@/lib/prisma-railway'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(req: Request) {
   try {
@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     const email: string = body.email
     const password: string = body.password
 
-    const user = await railwayPrisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
     })
 
