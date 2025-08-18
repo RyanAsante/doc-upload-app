@@ -101,13 +101,13 @@ export default function DashboardPage() {
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <div>
+          <div className="min-w-0 flex-1">
             <h1 className="text-3xl font-bold text-gray-900">My Documents</h1>
             <p className="text-gray-600 mt-2">
-              Welcome back, {user?.name}! You have {user?.uploadCount} documents.
+              Welcome back, <span className="truncate block">{user?.name}</span>! You have {user?.uploadCount} documents.
             </p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-shrink-0">
             <button
               onClick={handleLogout}
               className="text-gray-600 hover:text-gray-800 px-4 py-3 rounded-lg border border-gray-300 hover:border-gray-400 transition-colors"
@@ -156,9 +156,9 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <div className="ml-4">
+              <div className="ml-4 min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-600">Account</p>
-                <p className="text-2xl font-bold text-gray-900">{user?.email}</p>
+                <p className="text-2xl font-bold text-gray-900 truncate">{user?.email}</p>
               </div>
             </div>
           </div>

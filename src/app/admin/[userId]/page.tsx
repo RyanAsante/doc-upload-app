@@ -477,7 +477,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
               </button>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">User Details</h1>
-                <p className="text-gray-600">{user.name} ({user.email})</p>
+                <p className="text-gray-600"><span className="truncate block">{user.name}</span> (<span className="truncate block">{user.email}</span>)</p>
               </div>
             </div>
             <button
@@ -498,11 +498,11 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-gray-500">Name</p>
-              <p className="text-lg text-gray-900">{user.name}</p>
+              <p className="text-lg text-gray-900 truncate">{user.name}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Email</p>
-              <p className="text-lg text-gray-900">{user.email}</p>
+              <p className="text-lg text-gray-900 truncate">{user.email}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Role</p>
@@ -524,7 +524,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         {/* File Upload Section - Only show for CUSTOMER users */}
         {!isManager && (
           <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-200/50 mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Upload Files for {user.name}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Upload Files for <span className="truncate block">{user.name}</span></h2>
             
             {/* Camera Section */}
             <div className="mb-6">
@@ -701,8 +701,8 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {activity.action}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {activity.details}
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          <div className="truncate max-w-xs">{activity.details}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(activity.createdAt).toLocaleDateString()}
@@ -776,7 +776,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                         </div>
                       ) : (
                         <div className="flex items-center justify-between">
-                          <p className="text-gray-900 font-medium">
+                          <p className="text-gray-900 font-medium truncate max-w-xs">
                             {upload.title || upload.name}
                           </p>
                           <button
@@ -784,7 +784,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                               setEditingId(upload.id);
                               setEditingTitle(upload.title || '');
                             }}
-                            className="text-emerald-600 hover:text-emerald-700 text-sm"
+                            className="text-emerald-600 hover:text-emerald-700 text-sm flex-shrink-0 ml-2"
                           >
                             Edit
                           </button>

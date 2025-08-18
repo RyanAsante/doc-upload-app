@@ -56,11 +56,14 @@ export default function SignupPage() {
       const data = await res.json();
 
       if (res.ok) {
-        // ✅ Auto-login: store email in localStorage
-        localStorage.setItem('userEmail', form.email);
-
-        // ✅ Redirect to dashboard
-        router.push('/dashboard');
+        // Show verification message instead of auto-login
+        if (data.emailSent) {
+          setMessage(`✅ ${data.message}\n\nPlease check your email and click the verification link to activate your account.`);
+          // Clear form after successful signup
+          setForm({ name: '', email: '', password: '' });
+        } else {
+          setMessage(`✅ Account created but verification email failed to send. Please contact support.`);
+        }
       } else {
         // Handle different types of errors
         if (data.error && data.details) {

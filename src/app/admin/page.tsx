@@ -333,8 +333,12 @@ export default function AdminPage() {
                 <tbody>
                   {filteredUsers.map((user) => (
                     <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                      <td className="py-3 px-4 text-gray-900">{user.name}</td>
-                      <td className="py-3 px-4 text-gray-600">{user.email}</td>
+                      <td className="py-3 px-4 text-gray-900">
+                        <div className="truncate max-w-xs">{user.name}</div>
+                      </td>
+                      <td className="py-3 px-4 text-gray-600">
+                        <div className="truncate max-w-xs">{user.email}</div>
+                      </td>
                       <td className="py-3 px-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
@@ -380,9 +384,9 @@ export default function AdminPage() {
                 {pendingManagers.map((application) => (
                   <div key={application.id} className="border border-gray-200 rounded-xl p-4 bg-white/50">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{application.name}</h3>
-                        <p className="text-gray-600">{application.email}</p>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-gray-900 truncate">{application.name}</h3>
+                        <p className="text-gray-600 truncate">{application.email}</p>
                         <p className="text-sm text-gray-500">
                           Applied: {new Date(application.createdAt).toLocaleDateString()}
                         </p>
@@ -420,10 +424,10 @@ export default function AdminPage() {
                 {managerActivity.map((log) => (
                   <div key={log.id} className="border border-gray-200 rounded-xl p-4 bg-white/50">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{log.managerName || 'Unknown Manager'}</h3>
-                        <p className="text-gray-600">{log.managerEmail || 'No email'}</p>
-                        <p className="text-gray-800 mt-1">{log.details}</p>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-gray-900 truncate">{log.managerName || 'Unknown Manager'}</h3>
+                        <p className="text-gray-600 truncate">{log.managerEmail || 'No email'}</p>
+                        <p className="text-gray-800 mt-1 break-words">{log.details}</p>
                         <p className="text-sm text-gray-500 mt-2">
                           {new Date(log.createdAt).toLocaleString()}
                         </p>

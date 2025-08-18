@@ -402,28 +402,28 @@ export default function ManagerUserPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-6">
             <div className="flex items-center">
-              <div className="p-3 bg-emerald-100 rounded-lg">
+              <div className="p-3 bg-emerald-100 rounded-lg flex-shrink-0">
                 <svg className="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <div className="ml-4">
+              <div className="ml-4 min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-600">Name</p>
-                <p className="text-lg font-semibold text-gray-900">{user.name}</p>
+                <p className="text-lg font-semibold text-gray-900 truncate">{user.name}</p>
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-6">
             <div className="flex items-center">
-              <div className="p-3 bg-teal-100 rounded-lg">
+              <div className="p-3 bg-teal-100 rounded-lg flex-shrink-0">
                 <svg className="h-6 w-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <div className="ml-4">
+              <div className="ml-4 min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-600">Email</p>
-                <p className="text-lg font-semibold text-gray-900">{user.email}</p>
+                <p className="text-lg font-semibold text-gray-900 truncate">{user.email}</p>
               </div>
             </div>
           </div>
@@ -445,7 +445,7 @@ export default function ManagerUserPage() {
 
         {/* File Upload Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Document for {user.name}</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Document for <span className="truncate block">{user.name}</span></h2>
           
           {/* Camera Section */}
           <div className="mb-6">
@@ -687,7 +687,7 @@ export default function ManagerUserPage() {
                     ) : (
                       <div className="mb-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm font-medium text-gray-900 truncate max-w-xs">
                             {upload.title || 'Untitled'}
                           </span>
                           <button
@@ -695,7 +695,7 @@ export default function ManagerUserPage() {
                               setEditingId(upload.id);
                               setEditingTitle(upload.title || '');
                             }}
-                            className="text-xs text-emerald-600 hover:text-emerald-700"
+                            className="text-xs text-emerald-600 hover:text-emerald-700 flex-shrink-0 ml-2"
                           >
                             Edit
                           </button>

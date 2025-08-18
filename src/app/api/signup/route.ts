@@ -2,6 +2,7 @@ import { hash } from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sanitizeInput, isValidEmail, validatePasswordStrength, addSecurityHeaders } from '@/lib/security';
+import { generateVerificationToken, sendVerificationEmail } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,21 +44,40 @@ export async function POST(req: NextRequest) {
     // Hash password with higher salt rounds for better security
     const hashed = await hash(password, 12);
 
+    // Generate verification token
+    const verificationToken = generateVerificationToken();
+    const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     const user = await prisma.user.create({
       data: {
         name: sanitizedName,
         email: sanitizedEmail,
         password: hashed,
-        status: 'APPROVED', // Auto-approve regular users
+        status: 'PENDING', // Users need to verify email first
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: tokenExpiry,
       },
     });
+
+    // Send verification email
+    const emailSent = await sendVerificationEmail(
+      sanitizedEmail,
+      sanitizedName,
+      verificationToken
+    );
+
+    if (!emailSent) {
+      // If email fails, we should still create the user but log the issue
+      console.error('Failed to send verification email to:', sanitizedEmail);
+    }
 
     // Remove password from response
     const { password: userPassword, ...userWithoutPassword } = user;
 
     const response = NextResponse.json({ 
-      message: 'User created successfully', 
-      user: userWithoutPassword 
+      message: 'User created successfully. Please check your email to verify your account.', 
+      user: userWithoutPassword,
+      emailSent
     }, { status: 201 });
 
     // Add security headers

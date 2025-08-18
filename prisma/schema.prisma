@@ -9,17 +9,20 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(uuid())
-  name         String
-  email        String        @unique
-  password     String
-  role         UserRole      @default(CUSTOMER)
-  approvedAt   DateTime?
-  approvedBy   String?
-  createdAt    DateTime      @default(now())
-  status       UserStatus    @default(PENDING)
-  activityLogs ActivityLog[]
-  uploads      Upload[]
+  id                    String        @id @default(uuid())
+  name                  String
+  email                 String        @unique
+  password              String
+  role                  UserRole      @default(CUSTOMER)
+  approvedAt            DateTime?
+  approvedBy            String?
+  createdAt             DateTime      @default(now())
+  status                UserStatus    @default(PENDING)
+  emailVerified         Boolean       @default(false)
+  emailVerificationToken String?      @unique
+  emailVerificationExpires DateTime?
+  activityLogs          ActivityLog[]
+  uploads               Upload[]
 }
 
 model ActivityLog {

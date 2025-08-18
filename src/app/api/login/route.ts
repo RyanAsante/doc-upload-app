@@ -16,6 +16,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
+    // Check if user has verified their email
+    if (!user.emailVerified) {
+      return NextResponse.json({ 
+        error: 'Please verify your email address before logging in. Check your inbox for a verification link.' 
+      }, { status: 401 })
+    }
+
+    // Check if user is approved
+    if (user.status !== 'APPROVED') {
+      return NextResponse.json({ 
+        error: 'Your account is pending approval. Please contact an administrator.' 
+      }, { status: 401 })
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password)
 
     if (!isPasswordValid) {
