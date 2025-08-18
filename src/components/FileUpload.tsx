@@ -56,19 +56,35 @@ export default function FileUpload() {
 
       // Handle completion
       xhr.addEventListener('load', () => {
+        console.log('📡 Upload response:', { status: xhr.status, response: xhr.responseText });
+        
         if (xhr.status === 200) {
-          setUploadFiles(prev => 
-            prev.map(file => 
-              file.id === uploadFile.id 
-                ? { ...file, status: 'success' as const, progress: 100 }
-                : file
-            )
-          );
+          try {
+            const response = JSON.parse(xhr.responseText);
+            console.log('✅ Upload successful:', response);
+            setUploadFiles(prev => 
+              prev.map(file => 
+                file.id === uploadFile.id 
+                  ? { ...file, status: 'success' as const, progress: 100 }
+                  : file
+              )
+            );
+          } catch (parseError) {
+            console.error('❌ Failed to parse response:', parseError);
+            setUploadFiles(prev => 
+              prev.map(file => 
+                file.id === uploadFile.id 
+                  ? { ...file, status: 'error' as const, error: 'Invalid response' }
+                  : file
+              )
+            );
+          }
         } else {
+          console.error('❌ Upload failed with status:', xhr.status, 'Response:', xhr.responseText);
           setUploadFiles(prev => 
             prev.map(file => 
               file.id === uploadFile.id 
-                ? { ...file, status: 'error' as const, error: 'Upload failed' }
+                ? { ...file, status: 'error' as const, error: `Upload failed: ${xhr.status}` }
                 : file
             )
           );
@@ -98,8 +114,16 @@ export default function FileUpload() {
       });
 
       // Send the request
+      const userEmail = localStorage.getItem('userEmail') || '';
+      console.log('📤 Sending upload request:', { 
+        file: uploadFile.file.name, 
+        size: uploadFile.file.size, 
+        type: uploadFile.file.type,
+        userEmail 
+      });
+      
       xhr.open('POST', '/api/upload');
-      xhr.setRequestHeader('x-user-email', localStorage.getItem('userEmail') || '');
+      xhr.setRequestHeader('x-user-email', userEmail);
       xhr.send(formData);
 
     } catch (error) {
@@ -117,8 +141,7 @@ export default function FileUpload() {
     onDrop,
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'],
-      'application/pdf': ['.pdf'],
-      'text/*': ['.txt', '.md', '.doc', '.docx'],
+      'video/*': ['.mp4', '.webm', '.ogg', '.mov'],
     },
     multiple: true,
   });
@@ -174,7 +197,7 @@ export default function FileUpload() {
           </div>
           
           <p className="text-xs text-gray-400">
-            Supports: Images, PDFs, Documents (max 10MB each)
+            Supports: Images and Videos (max 100MB each)
           </p>
         </div>
         </motion.div>

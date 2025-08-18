@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface Upload {
   id: string;
-  title: string | null;
   name: string;
+  title?: string;
   imagePath: string;
-  fileType: string;
+  fileType: 'IMAGE' | 'VIDEO';
   createdAt: string;
 }
 
@@ -16,25 +16,84 @@ interface User {
   id: string;
   name: string;
   email: string;
+  role: string;
   uploadCount: number;
 }
 
-export default function DashboardPage() {
+export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [loading, setLoading] = useState(true);
   const [showImageModal, setShowImageModal] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string>('');
+  const [selectedImage, setSelectedImage] = useState('');
+  const [imageDataUrls, setImageDataUrls] = useState<{[key: string]: string}>({});
   const router = useRouter();
 
-  useEffect(() => {
-    const userEmail = localStorage.getItem('userEmail');
-    if (!userEmail) {
-      router.push('/login');
-      return;
-    }
+  // Convert secure file URLs to base64 data URLs
+  const convertToDataUrl = async (imagePath: string, uploadId: string) => {
+    try {
+      const userEmail = localStorage.getItem('userEmail');
+      if (!userEmail) return;
 
-    fetchUserUploads(userEmail);
+      const response = await fetch(imagePath, {
+        headers: {
+          'x-user-email': userEmail
+        }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImageDataUrls(prev => ({
+            ...prev,
+            [uploadId]: reader.result as string
+          }));
+        };
+        reader.readAsDataURL(blob);
+      }
+    } catch (error) {
+      console.error('Failed to convert image to data URL:', error);
+    }
+  };
+
+  // Load user data and uploads
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail) {
+          router.push('/login');
+          return;
+        }
+
+        // Load user data
+        const userResponse = await fetch('/api/get-uploads', {
+          headers: {
+            'x-user-email': userEmail
+          }
+        });
+
+        if (userResponse.ok) {
+          const data = await userResponse.json();
+          setUser(data.user);
+          setUploads(data.uploads || []);
+          
+          // Convert all images to data URLs
+          data.uploads?.forEach((upload: Upload) => {
+            if (upload.fileType === 'IMAGE') {
+              convertToDataUrl(upload.imagePath, upload.id);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboardData();
   }, [router]);
 
   // Redirect if not logged in
@@ -42,28 +101,6 @@ export default function DashboardPage() {
     router.push('/login');
     return null;
   }
-
-  const fetchUserUploads = async (userEmail: string) => {
-    try {
-      const response = await fetch('/api/get-uploads', {
-        headers: {
-          'x-user-email': userEmail,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        setUploads(data.uploads);
-      } else {
-        console.error('Failed to fetch uploads');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleLogout = () => {
     localStorage.removeItem('userEmail');
@@ -80,8 +117,10 @@ export default function DashboardPage() {
     });
   };
 
-  const openImageModal = (imagePath: string, fileType: string) => {
-    setSelectedImage(imagePath);
+  const openImageModal = (imagePath: string, fileType: string, uploadId: string) => {
+    // Use data URL if available, otherwise use the original path
+    const imageSource = imageDataUrls[uploadId] || imagePath;
+    setSelectedImage(imageSource);
     setShowImageModal(true);
   };
 
@@ -184,7 +223,7 @@ export default function DashboardPage() {
                 <div key={upload.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div 
                     className="aspect-w-16 aspect-h-9 mb-4 cursor-pointer"
-                    onClick={() => openImageModal(upload.imagePath, upload.fileType)}
+                    onClick={() => openImageModal(upload.imagePath, upload.fileType, upload.id)}
                   >
                     {upload.fileType === 'VIDEO' ? (
                       <div className="relative">
@@ -204,13 +243,14 @@ export default function DashboardPage() {
                       </div>
                     ) : (
                       <img
-                        src={upload.imagePath}
+                        src={imageDataUrls[upload.id] || upload.imagePath}
                         alt={upload.title || upload.name}
                         className="w-full h-48 object-cover rounded-lg"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik02MCAxMDBDODAgODAgMTIwIDgwIDE0MCAxMDBDMTYwIDEyMCAxNDAgMTQwIDEyMCAxNDBDMTAwIDE0MCA4MCAxMjAgNjAgMTAwWiIgZmlsbD0iI0QxRDVEM0YiLz4KPC9zdmc+';
+                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMjAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI0YzRjRGNiIvPgo8cGF0aCBkPSJNNjAgMTAwQzgwIDgwIDEyMCA4MCAxNDAgMTAwQzE2MCAxMjAgMTQwIDE0MCAxMjAgMTQwQzEwMCAxNDAgODAgMTIwIDYwIDEwMFoiIGZpbGw9IiNEMUQ1RDNCIi8+Cjwvc3ZnPg==';
                         }}
+                        crossOrigin="anonymous"
                       />
                     )}
                   </div>
@@ -271,6 +311,7 @@ export default function DashboardPage() {
                   maxHeight: 'calc(100vh - 2rem)',
                   maxWidth: 'calc(100vw - 2rem)'
                 }}
+                crossOrigin="anonymous"
               />
             )}
             

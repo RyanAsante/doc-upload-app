@@ -19,10 +19,26 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify user exists and is approved
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-      select: { id: true, status: true, role: true }
-    });
+    let user;
+    try {
+      user = await prisma.user.findUnique({
+        where: { email: userEmail },
+        select: { id: true, status: true, role: true }
+      });
+    } catch (dbError) {
+      console.error('❌ Database error finding user:', dbError);
+      // Try to reconnect to database
+      try {
+        await prisma.$connect();
+        user = await prisma.user.findUnique({
+          where: { email: userEmail },
+          select: { id: true, status: true, role: true }
+        });
+      } catch (reconnectError) {
+        console.error('❌ Failed to reconnect to database:', reconnectError);
+        return NextResponse.json({ error: 'Database connection error' }, { status: 500 });
+      }
+    }
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -81,25 +97,58 @@ export async function POST(req: NextRequest) {
     const newFileName = `${fileId}_${cleanFileName}`;
     
     // Store file securely (outside public folder)
+    console.log('🔒 Storing file securely:', { fileName: newFileName, size: buffer.length, userId: user.id });
     const secureFileName = await SecureFileAccess.storeFile({
       originalname: newFileName,
       buffer: buffer
     }, user.id);
+    console.log('✅ File stored securely:', secureFileName);
     
     // Create secure access URL (not public)
     const secureUrl = `/api/secure-file/${secureFileName}`;
+    console.log('🔗 Secure URL created:', secureUrl);
 
     // Determine file type
     const fileType = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
     
-    const upload = await prisma.upload.create({
-      data: {
-        name: file.name,
-        imagePath: secureUrl,
-        fileType: fileType,
-        userId: user.id,
-      },
-    });
+    console.log('💾 Creating database record:', { name: file.name, imagePath: secureUrl, fileType, userId: user.id });
+    let upload;
+    try {
+      upload = await prisma.upload.create({
+        data: {
+          name: file.name,
+          imagePath: secureUrl,
+          fileType: fileType,
+          userId: user.id,
+        },
+      });
+      console.log('✅ Database record created:', upload.id);
+    } catch (dbError) {
+      console.error('❌ Database error creating upload record:', dbError);
+      // Try to reconnect and retry
+      try {
+        await prisma.$connect();
+        upload = await prisma.upload.create({
+          data: {
+            name: file.name,
+            imagePath: secureUrl,
+            fileType: fileType,
+            userId: user.id,
+          },
+        });
+        console.log('✅ Database record created on retry:', upload.id);
+      } catch (retryError) {
+        console.error('❌ Failed to create database record on retry:', retryError);
+        // Even if database fails, we should return success since file was stored
+        return NextResponse.json({ 
+          message: 'File uploaded but database record creation failed',
+          warning: 'File is stored but may not appear in your uploads list',
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: fileType
+        }, { status: 200 });
+      }
+    }
 
     // Log the upload activity
     try {

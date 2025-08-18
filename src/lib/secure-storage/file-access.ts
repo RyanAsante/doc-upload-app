@@ -19,8 +19,16 @@ export class SecureFileAccess {
     const secureFileName = `${userId}_${Date.now()}_${file.originalname}`;
     const securePath = path.join(SECURE_UPLOADS_DIR, secureFileName);
     
+    console.log('🔒 SecureFileAccess.storeFile:', { 
+      secureFileName, 
+      securePath, 
+      bufferSize: file.buffer.length,
+      userId 
+    });
+    
     // Write buffer to secure location
     fs.writeFileSync(securePath, file.buffer);
+    console.log('✅ File written to secure location:', securePath);
     
     return secureFileName;
   }
