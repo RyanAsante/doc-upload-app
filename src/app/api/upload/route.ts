@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '@/lib/prisma';
-import { supabase } from '@/lib/supabase';
+import { SecureFileAccess } from '@/lib/secure-storage/file-access';
 import { sendFileUploadNotification } from '@/lib/email';
 
 // Security constants
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid file extension' }, { status: 400 });
     }
 
-    // Convert file to buffer
+    // Convert file to buffer and validate
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
@@ -76,34 +76,18 @@ export async function POST(req: NextRequest) {
     }
 
     const fileId = uuidv4();
-    // Clean filename for Supabase storage (remove special characters and spaces)
+    // Clean filename for secure storage
     const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const newFileName = `${fileId}_${cleanFileName}`;
     
-    // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase().storage
-      .from('uploads')
-      .upload(newFileName, buffer, {
-        contentType: file.type,
-        upsert: false, // Prevent overwriting existing files
-      });
-
-    if (uploadError) {
-      console.error('❌ Supabase upload error:', uploadError);
-      return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
-    }
-
-    // Get a signed URL for private bucket access (shorter expiry for security)
-    const { data: signedUrlData, error: signedUrlError } = await supabase().storage
-      .from('uploads')
-      .createSignedUrl(newFileName, 60 * 60 * 24 * 7); // 7 days expiry (more secure)
+    // Store file securely (outside public folder)
+    const secureFileName = await SecureFileAccess.storeFile({
+      originalname: newFileName,
+      buffer: buffer
+    }, user.id);
     
-    if (signedUrlError) {
-      console.error('❌ Signed URL error:', signedUrlError);
-      return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
-    }
-    
-    const publicUrl = signedUrlData.signedUrl;
+    // Create secure access URL (not public)
+    const secureUrl = `/api/secure-file/${secureFileName}`;
 
     // Determine file type
     const fileType = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
@@ -111,7 +95,7 @@ export async function POST(req: NextRequest) {
     const upload = await prisma.upload.create({
       data: {
         name: file.name,
-        imagePath: publicUrl,
+        imagePath: secureUrl,
         fileType: fileType,
         userId: user.id,
       },

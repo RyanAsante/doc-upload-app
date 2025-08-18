@@ -91,7 +91,7 @@ export default function SignupPage() {
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
               <img 
-                src="/uploads/AIS.jpg" 
+                src="/AIS.jpg" 
                 alt="Asante International Shipping Logo" 
                 className="w-full h-full object-cover rounded-xl"
               />

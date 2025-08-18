@@ -13,7 +13,7 @@ export default function HomePage() {
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center overflow-hidden">
               <img 
-                src="/uploads/AIS.jpg" 
+                src="/AIS.jpg" 
                 alt="Asante International Shipping Logo" 
                 className="w-full h-full object-cover"
               />
@@ -167,7 +167,7 @@ export default function HomePage() {
           <div className="flex items-center justify-center space-x-2 mb-4">
             <div className="w-6 h-6 rounded flex items-center justify-center overflow-hidden">
               <img 
-                src="/uploads/AIS.jpg" 
+                src="/AIS.jpg" 
                 alt="Asante International Shipping Logo" 
                 className="w-full h-full object-cover"
               />

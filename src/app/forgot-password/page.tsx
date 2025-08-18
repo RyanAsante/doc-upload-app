@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
           <Link href="/" className="inline-flex items-center space-x-2 hover:opacity-80 transition-opacity">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden">
               <img 
-                src="/uploads/AIS.jpg" 
+                src="/AIS.jpg" 
                 alt="Asante International Shipping Logo" 
                 className="w-full h-full object-cover rounded-xl"
               />
