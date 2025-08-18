@@ -66,7 +66,13 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         return;
       }
 
-      const response = await fetch(imagePath, {
+      // Extract filename from the imagePath (remove /api/secure-file/ prefix)
+      const fileName = imagePath.replace('/api/secure-file/', '');
+      const secureFileUrl = `/api/secure-file/${fileName}`;
+      
+      console.log('🔄 Converting file to data URL:', { uploadId, imagePath, fileName, secureFileUrl, adminEmail });
+
+      const response = await fetch(secureFileUrl, {
         headers: {
           'x-user-email': adminEmail
         }
@@ -74,8 +80,11 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
 
       if (response.ok) {
         const blob = await response.blob();
+        console.log('✅ File fetched successfully:', { uploadId, blobSize: blob.size, blobType: blob.type });
+        
         const reader = new FileReader();
         reader.onloadend = () => {
+          console.log('✅ Data URL created for:', uploadId);
           setImageDataUrls(prev => ({
             ...prev,
             [uploadId]: reader.result as string
@@ -83,10 +92,18 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         };
         reader.readAsDataURL(blob);
       } else {
-        console.error('Failed to fetch file:', response.status, response.statusText);
+        console.error('❌ Failed to fetch file:', { uploadId, status: response.status, statusText: response.statusText, imagePath });
+        
+        // Try to get more details about the error
+        try {
+          const errorText = await response.text();
+          console.error('❌ Error response body:', errorText);
+        } catch (e) {
+          console.error('❌ Could not read error response body');
+        }
       }
     } catch (error) {
-      console.error('Failed to convert image to data URL:', error);
+      console.error('❌ Failed to convert image to data URL:', { uploadId, error, imagePath });
     }
   };
 
