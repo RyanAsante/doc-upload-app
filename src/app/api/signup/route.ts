@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
         email: sanitizedEmail,
         password: hashed,
         status: 'PENDING', // Users need to verify email first
+        emailVerified: false, // Explicitly set to false for new users
         emailVerificationToken: verificationToken,
         emailVerificationExpires: tokenExpiry,
       },
