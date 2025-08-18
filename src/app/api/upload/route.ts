@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '@/lib/prisma';
 import { supabase } from '@/lib/supabase';
+import { sendFileUploadNotification } from '@/lib/email';
 
 // Security constants
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
@@ -127,6 +128,31 @@ export async function POST(req: NextRequest) {
       });
     } catch (logError) {
       console.error('Failed to create activity log:', logError);
+    }
+
+    // Send email notification if upload is from admin/manager
+    if (user.role === 'ADMIN' || user.role === 'MANAGER') {
+      try {
+        // Get user details for the email
+        const userDetails = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { name: true, email: true }
+        });
+
+        if (userDetails) {
+          await sendFileUploadNotification(
+            userDetails.email,
+            userDetails.name,
+            file.name,
+            fileType,
+            userDetails.name || userDetails.email,
+            user.role
+          );
+        }
+      } catch (emailError) {
+        console.error('Failed to send file upload notification email:', emailError);
+        // Don't fail the upload if email fails
+      }
     }
 
     return NextResponse.json({ 

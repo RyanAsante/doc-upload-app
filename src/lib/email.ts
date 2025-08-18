@@ -122,3 +122,66 @@ export async function sendPasswordResetEmail(
     return false;
   }
 }
+
+// Send file upload notification email
+export async function sendFileUploadNotification(
+  customerEmail: string,
+  customerName: string,
+  fileName: string,
+  fileType: string,
+  uploadedBy: string,
+  uploadedByRole: string
+): Promise<boolean> {
+  try {
+    if (!resend) {
+      console.error('Resend not configured. Please set RESEND_API_KEY in your environment variables.');
+      return false;
+    }
+
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+    
+    const result = await resend.emails.send({
+      from: process.env.FROM_EMAIL || 'noreply@resend.dev',
+      to: [customerEmail],
+      subject: `New File Uploaded - ${fileName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333; text-align: center;">New File Uploaded</h2>
+          <p>Hi ${customerName},</p>
+          <p>A new file has been uploaded to your account:</p>
+          
+          <div style="background-color: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0;">
+            <p style="margin: 0;"><strong>File Name:</strong> ${fileName}</p>
+            <p style="margin: 5px 0;"><strong>File Type:</strong> ${fileType}</p>
+            <p style="margin: 5px 0;"><strong>Uploaded By:</strong> ${uploadedBy} (${uploadedByRole})</p>
+            <p style="margin: 5px 0;"><strong>Upload Date:</strong> ${new Date().toLocaleDateString()}</p>
+          </div>
+          
+          <p>You can view and manage your files by logging into your dashboard:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${dashboardUrl}" 
+               style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+              View Your Files
+            </a>
+          </div>
+          
+          <p>If you have any questions about this upload, please contact your ${uploadedByRole.toLowerCase()}.</p>
+          <br>
+          <p>Best regards,<br>The Doc Upload App Team</p>
+        </div>
+      `,
+    });
+
+    // Check if email was sent successfully
+    if (result && result.data && !result.error) {
+      console.log('File upload notification email sent successfully:', result.data.id);
+      return true;
+    } else {
+      console.error('Failed to send file upload notification email:', result?.error);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error sending file upload notification email:', error);
+    return false;
+  }
+}
