@@ -51,7 +51,11 @@ export async function POST(req: NextRequest) {
       path: '/',
     });
     
-    return NextResponse.json({ success: true, message: 'Manager login successful' });
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Manager login successful',
+      email: user.email // Return manager email for localStorage
+    });
   } catch (error) {
     console.error('Manager login error:', error);
     return NextResponse.json({ error: 'Login failed' }, { status: 500 });

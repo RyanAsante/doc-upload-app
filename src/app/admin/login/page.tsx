@@ -19,6 +19,11 @@ export default function AdminLoginPage() {
       });
 
       if (res.ok) {
+        const data = await res.json();
+        // Store admin email in localStorage for file access
+        if (data.email) {
+          localStorage.setItem('admin-email', data.email);
+        }
         // Redirect to admin page (authentication is handled by middleware)
         router.push('/admin');
       } else {

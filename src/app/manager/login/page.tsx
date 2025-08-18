@@ -24,6 +24,10 @@ export default function ManagerLoginPage() {
       const data = await res.json();
 
       if (res.ok) {
+        // Store manager email in localStorage for file access
+        if (data.email) {
+          localStorage.setItem('manager-email', data.email);
+        }
         router.push('/manager');
       } else {
         setError(data.error || 'Login failed');

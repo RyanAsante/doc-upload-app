@@ -50,18 +50,22 @@ export class SecureFileAccess {
       
       // Managers can access files they uploaded for customers
       if (userRole === 'MANAGER') {
+        // First, try to find the file by exact filename match
         const upload = await prisma.upload.findFirst({
           where: {
             imagePath: {
-              contains: fileName
-            },
-            OR: [
-              { userId: userId }, // Files they uploaded for themselves
-              { userId: { not: null } } // Files they uploaded for customers (check by name pattern)
-            ]
+              endsWith: fileName
+            }
           }
         });
-        return !!upload;
+        
+        if (upload) {
+          // Managers can access any file that exists in the system
+          // This allows them to view customer files they've uploaded
+          return true;
+        }
+        
+        return false;
       }
       
       // Customers can only access their own files
@@ -69,7 +73,7 @@ export class SecureFileAccess {
         const upload = await prisma.upload.findFirst({
           where: {
             imagePath: {
-              contains: fileName
+              endsWith: fileName
             },
             userId: userId
           }

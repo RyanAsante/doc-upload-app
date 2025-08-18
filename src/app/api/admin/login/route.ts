@@ -14,7 +14,10 @@ export async function POST(req: NextRequest) {
 
     if (password === adminPassword) {
       // Create a secure HTTP-only cookie
-      const response = NextResponse.json({ message: 'Admin login successful' }, { status: 200 });
+      const response = NextResponse.json({ 
+        message: 'Admin login successful',
+        email: 'admin@asante-shipping.com' // Return admin email for localStorage
+      }, { status: 200 });
       response.cookies.set('admin-auth', 'true', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',

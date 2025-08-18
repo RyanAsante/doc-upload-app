@@ -59,9 +59,16 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   // Convert secure file URLs to base64 data URLs
   const convertToDataUrl = async (imagePath: string, uploadId: string) => {
     try {
+      // Get the current admin's email from localStorage
+      const adminEmail = localStorage.getItem('admin-email');
+      if (!adminEmail) {
+        console.error('Admin email not found in localStorage');
+        return;
+      }
+
       const response = await fetch(imagePath, {
         headers: {
-          'x-user-email': localStorage.getItem('admin-email') || ''
+          'x-user-email': adminEmail
         }
       });
 
@@ -75,6 +82,8 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
           }));
         };
         reader.readAsDataURL(blob);
+      } else {
+        console.error('Failed to fetch file:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Failed to convert image to data URL:', error);
