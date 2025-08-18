@@ -514,10 +514,12 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                 {user.role}
               </span>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Uploads</p>
-              <p className="text-lg text-gray-900">{uploads.length}</p>
-            </div>
+            {!isManager && (
+              <div>
+                <p className="text-sm font-medium text-gray-500">Total Uploads</p>
+                <p className="text-lg text-gray-900">{uploads.length}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -716,108 +718,106 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
           </div>
         )}
 
-        {/* Uploads Display */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            {isManager ? 'Manager Files' : 'User Files'}
-          </h2>
-          
-          {uploads.length === 0 ? (
-            <p className="text-gray-600 text-center py-8">No files uploaded yet</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {uploads.map((upload) => (
-                <div key={upload.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-                  <div className="aspect-square mb-3 overflow-hidden rounded-lg">
-                    {upload.fileType === 'VIDEO' ? (
-                      <video
-                        src={upload.imagePath}
-                        controls
-                        className="w-full h-full object-cover cursor-pointer"
-                        onClick={() => openImageModal(upload)}
-                      />
-                    ) : (
-                      <img
-                        src={upload.imagePath}
-                        alt={upload.title || upload.name}
-                        className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => openImageModal(upload)}
-                      />
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                      {editingId === upload.id ? (
-                        <div className="flex space-x-2">
-                          <input
-                            type="text"
-                            value={editingTitle}
-                            onChange={(e) => setEditingTitle(e.target.value)}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 placeholder-gray-400"
-                            placeholder="Enter title"
-                          />
-                          <button
-                            onClick={() => handleUpdateTitle(upload.id)}
-                            className="bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-emerald-700 transition-all duration-200"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => {
-                              setEditingId(null);
-                              setEditingTitle('');
-                            }}
-                            className="bg-gray-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-all duration-200"
-                          >
-                            Cancel
-                          </button>
-                        </div>
+        {/* Uploads Display - Only show for CUSTOMER users */}
+        {!isManager && (
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">User Files</h2>
+            
+            {uploads.length === 0 ? (
+              <p className="text-gray-600 text-center py-8">No files uploaded yet</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {uploads.map((upload) => (
+                  <div key={upload.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                    <div className="aspect-square mb-3 overflow-hidden rounded-lg">
+                      {upload.fileType === 'VIDEO' ? (
+                        <video
+                          src={upload.imagePath}
+                          controls
+                          className="w-full h-full object-cover cursor-pointer"
+                          onClick={() => openImageModal(upload)}
+                        />
                       ) : (
-                        <div className="flex items-center justify-between">
-                          <p className="text-gray-900 font-medium truncate max-w-xs">
-                            {upload.title || upload.name}
-                          </p>
-                          <button
-                            onClick={() => {
-                              setEditingId(upload.id);
-                              setEditingTitle(upload.title || '');
-                            }}
-                            className="text-emerald-600 hover:text-emerald-700 text-sm flex-shrink-0 ml-2"
-                          >
-                            Edit
-                          </button>
-                        </div>
+                        <img
+                          src={upload.imagePath}
+                          alt={upload.title || upload.name}
+                          className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => openImageModal(upload)}
+                        />
                       )}
                     </div>
                     
-                    <div className="flex items-center justify-between">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        upload.fileType === 'VIDEO' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {upload.fileType}
-                      </span>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                        {editingId === upload.id ? (
+                          <div className="flex space-x-2">
+                            <input
+                              type="text"
+                              value={editingTitle}
+                              onChange={(e) => setEditingTitle(e.target.value)}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                              placeholder="Enter title"
+                            />
+                            <button
+                              onClick={() => handleUpdateTitle(upload.id)}
+                              className="bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-emerald-700 transition-all duration-200"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingId(null);
+                                setEditingTitle('');
+                              }}
+                              className="bg-gray-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-all duration-200"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <p className="text-gray-900 font-medium truncate max-w-xs">
+                              {upload.title || upload.name}
+                            </p>
+                            <button
+                              onClick={() => {
+                                setEditingId(upload.id);
+                                setEditingTitle(upload.title || '');
+                              }}
+                              className="text-emerald-600 hover:text-emerald-700 text-sm flex-shrink-0 ml-2"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        )}
+                      </div>
                       
-                      {!isManager && (
+                      <div className="flex items-center justify-between">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          upload.fileType === 'VIDEO' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {upload.fileType}
+                        </span>
+                        
                         <button
                           onClick={() => handleDeleteFile(upload.id)}
                           className="text-red-600 hover:text-red-700 text-sm font-medium"
                         >
                           Delete
                         </button>
-                      )}
+                      </div>
+                      
+                      <p className="text-xs text-gray-500">
+                        {new Date(upload.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
-                    
-                    <p className="text-xs text-gray-500">
-                      {new Date(upload.createdAt).toLocaleDateString()}
-                    </p>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Enhanced Image/Video Modal */}
