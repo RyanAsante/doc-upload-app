@@ -102,7 +102,7 @@ export default function ManagerLoginPage() {
             )}
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-3">
             <p className="text-gray-600">
               <button
                 onClick={() => router.push('/admin/login')}
@@ -118,7 +118,15 @@ export default function ManagerLoginPage() {
                 Back to Home
               </button>
             </p>
-            <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-gray-600">
+              <button
+                onClick={() => router.push('/forgot-password')}
+                className="text-emerald-600 hover:text-emerald-700 font-medium"
+              >
+                Forgot your password?
+              </button>
+            </p>
+            <div className="pt-4 border-t border-gray-200">
               <p className="text-gray-600 text-sm">
                 Don&apos;t have a manager account?{' '}
                 <button
