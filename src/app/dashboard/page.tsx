@@ -104,7 +104,7 @@ export default function DashboardPage() {
           <div className="min-w-0 flex-1">
             <h1 className="text-3xl font-bold text-gray-900">My Documents</h1>
             <p className="text-gray-600 mt-2">
-              Welcome back, <span className="truncate block">{user?.name}</span>! You have {user?.uploadCount} documents.
+              Welcome back, <span className="font-medium text-gray-900">{user?.name}</span>! You have {user?.uploadCount} documents.
             </p>
           </div>
           <div className="flex gap-4 flex-shrink-0">
