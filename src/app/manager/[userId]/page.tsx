@@ -32,6 +32,7 @@ export default function ManagerUserPage() {
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [editingTitle, setEditingTitle] = useState<string>('');
   const [editingId, setEditingId] = useState<string>('');
+  const [imageDataUrls, setImageDataUrls] = useState<{[key: string]: string}>({});
   
   // Video recording states
   const [isRecording, setIsRecording] = useState(false);
@@ -43,6 +44,33 @@ export default function ManagerUserPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Convert secure file URLs to base64 data URLs
+  const convertToDataUrl = async (imagePath: string, uploadId: string) => {
+    try {
+      const response = await fetch(imagePath, {
+        headers: {
+          'x-user-email': localStorage.getItem('manager-email') || ''
+        }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImageDataUrls(prev => ({
+            ...prev,
+            [uploadId]: reader.result as string
+          }));
+        };
+        reader.readAsDataURL(blob);
+      }
+    } catch (error) {
+      console.error('Failed to convert image to data URL:', error);
+    }
+  };
+
+
+
   useEffect(() => {
     if (userId) {
       fetch(`/api/admin/user/${userId}`)
@@ -50,6 +78,14 @@ export default function ManagerUserPage() {
         .then((data) => {
           setUser(data.user);
           setUploads(data.uploads);
+          
+          // Convert all images to data URLs
+          data.uploads?.forEach((upload: Upload) => {
+            if (upload.fileType === 'IMAGE') {
+              convertToDataUrl(upload.imagePath, upload.id);
+            }
+          });
+          
           setLoading(false);
         })
         .catch(() => {
@@ -639,19 +675,28 @@ export default function ManagerUserPage() {
                 <div key={upload.id} className="bg-gray-50 rounded-xl overflow-hidden border border-gray-200/50 hover:shadow-lg transition-shadow duration-200">
                   <div 
                     className="aspect-w-16 aspect-h-9 cursor-pointer"
-                    onClick={() => openImageModal(upload.imagePath)}
+                    onClick={() => {
+                      // Use data URL if available, otherwise use the original path
+                      const imageSource = imageDataUrls[upload.id] || upload.imagePath;
+                      setSelectedImage(imageSource);
+                      setShowImageModal(true);
+                    }}
                   >
                     {upload.fileType === 'VIDEO' ? (
                       <video
-                        src={upload.imagePath}
+                        src={imageDataUrls[upload.id] || upload.imagePath}
                         className="w-full h-48 object-cover"
                         controls
                       />
                     ) : (
                       <img
-                        src={upload.imagePath}
+                        src={imageDataUrls[upload.id] || upload.imagePath}
                         alt={upload.title || upload.name}
                         className="w-full h-48 object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMjAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI0YzRjRGNiIvPgo8cGF0aCBkPSJNNjAgMTAwQzgwIDgwIDEyMCA4MCAxNDAgMTAwQzE2MCAxMjAgMTQwIDE0MCAxMjAgMTQwQzEwMCAxNDAgODAgMTIwIDYwIDEwMFoiIGZpbGw9IiNEMUQ1RDNCIi8+Cjwvc3ZnPg==';
+                        }}
                       />
                     )}
                   </div>

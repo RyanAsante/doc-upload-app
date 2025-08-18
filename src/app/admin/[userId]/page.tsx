@@ -44,6 +44,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   const [managerActivity, setManagerActivity] = useState<ManagerActivity[]>([]);
   const [loadingActivity, setLoadingActivity] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const [imageDataUrls, setImageDataUrls] = useState<{[key: string]: string}>({});
   
   // Video recording states
   const [isRecording, setIsRecording] = useState(false);
@@ -54,6 +55,31 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Convert secure file URLs to base64 data URLs
+  const convertToDataUrl = async (imagePath: string, uploadId: string) => {
+    try {
+      const response = await fetch(imagePath, {
+        headers: {
+          'x-user-email': localStorage.getItem('admin-email') || ''
+        }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImageDataUrls(prev => ({
+            ...prev,
+            [uploadId]: reader.result as string
+          }));
+        };
+        reader.readAsDataURL(blob);
+      }
+    } catch (error) {
+      console.error('Failed to convert image to data URL:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -66,6 +92,13 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
           setUploads(data.uploads);
           setIsManager(data.user.role === 'MANAGER');
           setCurrentUserRole(data.user.role); // Set current user's role
+          
+          // Convert all images to data URLs
+          data.uploads?.forEach((upload: Upload) => {
+            if (upload.fileType === 'IMAGE') {
+              convertToDataUrl(upload.imagePath, upload.id);
+            }
+          });
           
           // If this is a manager, fetch their activity
           if (data.user.role === 'MANAGER') {
@@ -736,16 +769,20 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                     <div className="aspect-square mb-3 overflow-hidden rounded-lg">
                       {upload.fileType === 'VIDEO' ? (
                         <video
-                          src={upload.imagePath}
+                          src={imageDataUrls[upload.id] || upload.imagePath}
                           controls
                           className="w-full h-full object-cover cursor-pointer"
                           onClick={() => openImageModal(upload)}
                         />
                       ) : (
                         <img
-                          src={upload.imagePath}
+                          src={imageDataUrls[upload.id] || upload.imagePath}
                           alt={upload.title || upload.name}
                           className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMjAwIiBmaWxsPSJub25lIiB4bWxucz0iI0YzRjRGNiIvPgo8cGF0aCBkPSJNNjAgMTAwQzgwIDgwIDEyMCA4MCAxNDAgMTAwQzE2MCAxMjAgMTQwIDE0MCAxMjAgMTQwQzEwMCAxNDAgODAgMTIwIDYwIDEwMFoiIGZpbGw9IiNEMUQ1RDNCIi8+Cjwvc3ZnPg==';
+                          }}
                           onClick={() => openImageModal(upload)}
                         />
                       )}
