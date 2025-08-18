@@ -25,7 +25,7 @@ export async function sendVerificationEmail(
     
     // Use the correct Resend API method
     const result = await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'noreply@resend.dev',
+      from: process.env.FROM_EMAIL || 'noreply@asanteinternational.com',
       to: [email],
       subject: 'Verify Your Email - Doc Upload App',
       html: `
@@ -85,7 +85,7 @@ export async function sendPasswordResetEmail(
     
     // Use the correct Resend API method
     const result = await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'noreply@resend.dev',
+      from: process.env.FROM_EMAIL || 'noreply@asanteinternational.com',
       to: [email],
       subject: 'Reset Your Password - Doc Upload App',
       html: `
@@ -141,7 +141,7 @@ export async function sendFileUploadNotification(
     const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
     
     const result = await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'noreply@resend.dev',
+      from: process.env.FROM_EMAIL || 'noreply@asanteinternational.com',
       to: [customerEmail],
       subject: `New File Uploaded - ${fileName}`,
       html: `

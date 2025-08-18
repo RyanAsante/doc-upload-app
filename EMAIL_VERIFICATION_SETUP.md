@@ -36,8 +36,8 @@ Create a `.env.local` file in your project root with:
 # Resend Configuration
 RESEND_API_KEY=re_1234567890abcdef...
 
-# From Email Address (optional - defaults to noreply@yourdomain.com)
-FROM_EMAIL=noreply@yourdomain.com
+# From Email Address (optional - defaults to noreply@asanteinternational.com)
+FROM_EMAIL=noreply@asanteinternational.com
 
 # App URL for verification links
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -52,8 +52,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
    - Add it to your `.env.local` file
 3. **Verify your domain** (optional but recommended):
    - Add your domain in Resend dashboard
-   - This allows you to send from `noreply@yourdomain.com`
-   - Without verification, you can use `noreply@resend.dev`
+   - This allows you to send from `noreply@asanteinternational.com`
+- Without verification, you can use `noreply@asanteinternational.com`
 
 ### 3. Update App URL
 For production, change `NEXT_PUBLIC_APP_URL` to your actual domain:
