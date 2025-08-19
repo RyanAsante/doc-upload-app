@@ -497,7 +497,7 @@ export default function ManagerUserPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-600"></div>
       </div>
     );
@@ -505,12 +505,12 @@ export default function ManagerUserPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">User not found</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">User not found</h2>
           <button
             onClick={() => router.push('/manager')}
-            className="text-emerald-600 hover:text-emerald-700"
+            className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
           >
             Back to Manager Dashboard
           </button>
@@ -520,18 +520,18 @@ export default function ManagerUserPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <button onClick={() => router.push('/')} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-              <div className="w-10 h-10 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">V</span>
+      <div className="bg-white border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+            <button onClick={() => router.push('/manager')} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+              <div className="w-12 h-12 sm:w-10 sm:h-10 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center overflow-hidden">
+                <img src="/AIS.jpg" alt="AIS Logo" className="w-full h-full object-cover" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">User Details</h1>
-                <p className="text-sm text-gray-500">View user information and uploads</p>
+                <h1 className="text-2xl sm:text-xl font-semibold text-gray-900">Customer Dashboard</h1>
+                <p className="text-sm text-gray-500">Managing documents for {user.name}</p>
               </div>
             </button>
             <button onClick={() => router.push('/manager')} className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
