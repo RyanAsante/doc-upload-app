@@ -19,6 +19,7 @@ type Upload = {
 };
 
 export default function ManagerUserPage() {
+  console.log('🔄 ManagerUserPage component loaded');
   const { userId } = useParams();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -106,9 +107,14 @@ export default function ManagerUserPage() {
           setUploads(data.uploads);
           
           // Convert all images to data URLs
+          console.log('🔄 Starting to convert uploads:', data.uploads?.length || 0);
           data.uploads?.forEach((upload: Upload) => {
+            console.log('🔄 Processing upload:', { id: upload.id, fileType: upload.fileType, imagePath: upload.imagePath });
             if (upload.fileType === 'IMAGE') {
+              console.log('🔄 Calling convertToDataUrl for IMAGE:', upload.id);
               convertToDataUrl(upload.imagePath, upload.id);
+            } else {
+              console.log('🔄 Skipping non-IMAGE file:', { id: upload.id, fileType: upload.fileType });
             }
           });
           
