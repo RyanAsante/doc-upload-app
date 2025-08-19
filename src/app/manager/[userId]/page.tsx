@@ -19,11 +19,13 @@ type Upload = {
 };
 
 export default function ManagerUserPage() {
-  console.log('🔄 ManagerUserPage component loaded');
+  console.log('🔄 ManagerUserPage component loaded - START');
   
   // Check localStorage immediately
   const managerEmail = localStorage.getItem('manager-email');
   console.log('🔄 localStorage check on component load:', { managerEmail });
+  
+  console.log('🔄 ManagerUserPage component loaded - END');
   
   // Test localStorage functionality
   const testLocalStorage = () => {
@@ -123,11 +125,14 @@ export default function ManagerUserPage() {
 
   useEffect(() => {
     console.log('🔄 useEffect triggered with userId:', userId);
+    console.log('🔄 useEffect dependencies:', { userId, userIdType: typeof userId });
+    
     if (userId) {
       console.log('🔄 Fetching user data from:', `/api/admin/user/${userId}`);
       fetch(`/api/admin/user/${userId}`)
         .then((res) => {
           console.log('🔄 Response status:', res.status);
+          console.log('🔄 Response headers:', Object.fromEntries(res.headers.entries()));
           return res.json();
         })
         .then((data) => {
