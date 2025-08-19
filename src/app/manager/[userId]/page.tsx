@@ -20,6 +20,11 @@ type Upload = {
 
 export default function ManagerUserPage() {
   console.log('🔄 ManagerUserPage component loaded');
+  
+  // Check localStorage immediately
+  const managerEmail = localStorage.getItem('manager-email');
+  console.log('🔄 localStorage check on component load:', { managerEmail });
+  
   const { userId } = useParams();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);

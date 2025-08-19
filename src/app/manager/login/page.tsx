@@ -24,12 +24,23 @@ export default function ManagerLoginPage() {
       const data = await res.json();
 
       if (res.ok) {
+        console.log('🔄 Manager login successful, received data:', data);
+        
         // Store manager email in localStorage for file access
         if (data.email) {
+          console.log('🔄 Storing manager email in localStorage:', data.email);
           localStorage.setItem('manager-email', data.email);
+          
+          // Verify it was stored
+          const storedEmail = localStorage.getItem('manager-email');
+          console.log('🔄 Verified stored email:', storedEmail);
+        } else {
+          console.error('❌ No email received in login response');
         }
+        
         router.push('/manager');
       } else {
+        console.error('❌ Manager login failed:', data.error);
         setError(data.error || 'Login failed');
       }
     } catch (err) {
