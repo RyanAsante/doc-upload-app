@@ -48,10 +48,14 @@ export default function ManagerUserPage() {
   // Convert secure file URLs to base64 data URLs
   const convertToDataUrl = async (imagePath: string, uploadId: string) => {
     try {
+      console.log('🔄 convertToDataUrl called with:', { imagePath, uploadId });
+      
       // Get the current manager's email from localStorage
       const managerEmail = localStorage.getItem('manager-email');
+      console.log('🔄 Manager email from localStorage:', managerEmail);
+      
       if (!managerEmail) {
-        console.error('Manager email not found in localStorage');
+        console.error('❌ Manager email not found in localStorage');
         return;
       }
 
@@ -99,30 +103,48 @@ export default function ManagerUserPage() {
 
 
   useEffect(() => {
+    console.log('🔄 useEffect triggered with userId:', userId);
     if (userId) {
+      console.log('🔄 Fetching user data from:', `/api/admin/user/${userId}`);
       fetch(`/api/admin/user/${userId}`)
-        .then((res) => res.json())
+        .then((res) => {
+          console.log('🔄 Response status:', res.status);
+          return res.json();
+        })
         .then((data) => {
+          console.log('🔄 Received data:', { 
+            user: data.user, 
+            uploadsCount: data.uploads?.length || 0,
+            uploads: data.uploads 
+          });
+          
           setUser(data.user);
           setUploads(data.uploads);
           
           // Convert all images to data URLs
           console.log('🔄 Starting to convert uploads:', data.uploads?.length || 0);
-          data.uploads?.forEach((upload: Upload) => {
-            console.log('🔄 Processing upload:', { id: upload.id, fileType: upload.fileType, imagePath: upload.imagePath });
-            if (upload.fileType === 'IMAGE') {
-              console.log('🔄 Calling convertToDataUrl for IMAGE:', upload.id);
-              convertToDataUrl(upload.imagePath, upload.id);
-            } else {
-              console.log('🔄 Skipping non-IMAGE file:', { id: upload.id, fileType: upload.fileType });
-            }
-          });
+          if (data.uploads && data.uploads.length > 0) {
+            data.uploads.forEach((upload: Upload) => {
+              console.log('🔄 Processing upload:', { id: upload.id, fileType: upload.fileType, imagePath: upload.imagePath });
+              if (upload.fileType === 'IMAGE') {
+                console.log('🔄 Calling convertToDataUrl for IMAGE:', upload.id);
+                convertToDataUrl(upload.imagePath, upload.id);
+              } else {
+                console.log('🔄 Skipping non-IMAGE file:', { id: upload.id, fileType: upload.fileType });
+              }
+            });
+          } else {
+            console.log('🔄 No uploads found in data');
+          }
           
           setLoading(false);
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('❌ Error fetching user data:', error);
           setLoading(false);
         });
+    } else {
+      console.log('🔄 No userId provided');
     }
   }, [userId]);
 
