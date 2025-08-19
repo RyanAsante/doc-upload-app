@@ -80,16 +80,28 @@ export default function ManagerUserPage() {
         return;
       }
 
-      // Extract filename from the imagePath (remove /api/secure-file/ prefix)
-      const fileName = imagePath.replace('/api/secure-file/', '');
-      const secureFileUrl = `/api/secure-file/${fileName}`;
+      // Handle different file path types
+      let fileName: string;
+      let secureFileUrl: string;
+      
+      if (imagePath.includes('supabase.co')) {
+        // This is a Supabase URL - extract the filename from the end
+        console.log('⚠️ Detected Supabase URL, extracting filename from end');
+        fileName = imagePath.split('/').pop() || 'unknown';
+        // For Supabase URLs, we need to use the full URL directly
+        secureFileUrl = imagePath;
+      } else if (imagePath.startsWith('/api/secure-file/')) {
+        // This is a secure-file path - extract filename
+        fileName = imagePath.replace('/api/secure-file/', '');
+        secureFileUrl = `/api/secure-file/${fileName}`;
+      } else {
+        // Unknown path format
+        console.log('⚠️ Unknown file path format:', imagePath);
+        fileName = 'unknown';
+        secureFileUrl = imagePath;
+      }
       
       console.log('🔄 Converting file to data URL:', { uploadId, imagePath, fileName, secureFileUrl, managerEmail });
-      
-      // Debug: Check if this is a Supabase URL
-      if (imagePath.includes('supabase.co')) {
-        console.log('⚠️ Detected Supabase URL, this may not work with secure-file API');
-      }
 
       const response = await fetch(secureFileUrl, {
         headers: {
