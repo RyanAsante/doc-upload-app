@@ -377,6 +377,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
 
     const formData = new FormData();
     formData.append('document', selectedFile);
+    formData.append('customerEmail', user.email); // Pass customer email for admin upload
 
     try {
       const response = await fetch('/api/upload', {

@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
+  const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null); // Store full upload object
   const [imageDataUrls, setImageDataUrls] = useState<{[key: string]: string}>({});
   const router = useRouter();
 
@@ -79,9 +80,9 @@ export default function Dashboard() {
           setUser(data.user);
           setUploads(data.uploads || []);
           
-          // Convert all images to data URLs
+          // Convert all images and videos to data URLs
           data.uploads?.forEach((upload: Upload) => {
-            if (upload.fileType === 'IMAGE') {
+            if (upload.fileType === 'IMAGE' || upload.fileType === 'VIDEO') {
               convertToDataUrl(upload.imagePath, upload.id);
             }
           });
@@ -117,10 +118,11 @@ export default function Dashboard() {
     });
   };
 
-  const openImageModal = (imagePath: string, fileType: string, uploadId: string) => {
+  const openImageModal = (imagePath: string, fileType: string, uploadId: string, upload: Upload) => {
     // Use data URL if available, otherwise use the original path
     const imageSource = imageDataUrls[uploadId] || imagePath;
     setSelectedImage(imageSource);
+    setSelectedUpload(upload); // Store the full upload object
     setShowImageModal(true);
   };
 
@@ -223,7 +225,7 @@ export default function Dashboard() {
                 <div key={upload.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div 
                     className="aspect-w-16 aspect-h-9 mb-4 cursor-pointer"
-                    onClick={() => openImageModal(upload.imagePath, upload.fileType, upload.id)}
+                    onClick={() => openImageModal(upload.imagePath, upload.fileType, upload.id, upload)}
                   >
                     {upload.fileType === 'VIDEO' ? (
                       <div className="relative">
@@ -280,10 +282,10 @@ export default function Dashboard() {
         >
           <div className="relative w-full h-full max-w-7xl max-h-full flex items-center justify-center">
             {/* Video Player */}
-            {selectedImage.includes('.mp4') || selectedImage.includes('.mov') || selectedImage.includes('.avi') || selectedImage.includes('.webm') ? (
+            {selectedUpload && selectedUpload.fileType === 'VIDEO' ? (
               <div className="relative w-full h-full flex items-center justify-center">
                 <video
-                  src={selectedImage}
+                  src={imageDataUrls[selectedUpload.id] || selectedUpload.imagePath}
                   className="w-full h-full max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                   controls
                   autoPlay
