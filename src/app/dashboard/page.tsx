@@ -81,7 +81,7 @@ export default function Dashboard() {
           
           // Convert all images to data URLs
           data.uploads?.forEach((upload: Upload) => {
-            if (upload.fileType === 'IMAGE' || upload.fileType === 'VIDEO') {
+            if (upload.fileType === 'IMAGE') {
               convertToDataUrl(upload.imagePath, upload.id);
             }
           });
@@ -228,7 +228,7 @@ export default function Dashboard() {
                     {upload.fileType === 'VIDEO' ? (
                       <div className="relative">
                         <video
-                          src={imageDataUrls[upload.id] || upload.imagePath}
+                          src={upload.imagePath}
                           className="w-full h-48 object-cover rounded-lg"
                           controls
                           preload="metadata"

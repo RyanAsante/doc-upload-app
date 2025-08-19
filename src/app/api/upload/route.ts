@@ -51,7 +51,6 @@ export async function POST(req: NextRequest) {
     // Get the form data
     const formData = await req.formData();
     const file = formData.get('document') as File;
-    const customerEmail = formData.get('customerEmail') as string; // New: optional customer email
 
     if (!file) {
       return NextResponse.json({ error: 'Missing file' }, { status: 400 });
@@ -112,48 +111,15 @@ export async function POST(req: NextRequest) {
     // Determine file type
     const fileType = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
     
-    // Determine the target user ID for the upload
-    let targetUserId: string;
+    console.log('💾 Creating database record:', { name: file.name, imagePath: secureUrl, fileType, userId: user.id });
     let upload;
-    
-    if (customerEmail && user.role === 'ADMIN') {
-      // Admin is uploading for a customer
-      console.log('👤 Admin uploading for customer:', customerEmail);
-      
-      // Find or create customer user
-      let customer = await prisma.user.findUnique({
-        where: { email: customerEmail },
-      });
-
-      if (!customer) {
-        // Create customer user if they don't exist
-        customer = await prisma.user.create({
-          data: {
-            name: customerEmail.split('@')[0], // Use email prefix as name
-            email: customerEmail,
-            password: '', // No password for admin-created accounts
-            role: 'CUSTOMER',
-            status: 'APPROVED', // Auto-approve customers created by admins
-          },
-        });
-        console.log('✅ Created new customer user:', customer.id);
-      }
-      
-      targetUserId = customer.id;
-      console.log('💾 Creating database record for customer:', { name: file.name, imagePath: secureUrl, fileType, userId: targetUserId });
-    } else {
-      // Admin is uploading for themselves
-      targetUserId = user.id;
-      console.log('💾 Creating database record for admin:', { name: file.name, imagePath: secureUrl, fileType, userId: targetUserId });
-    }
-    
     try {
       upload = await prisma.upload.create({
         data: {
           name: file.name,
           imagePath: secureUrl,
           fileType: fileType,
-          userId: targetUserId,
+          userId: user.id,
         },
       });
       console.log('✅ Database record created:', upload.id);
@@ -167,7 +133,7 @@ export async function POST(req: NextRequest) {
             name: file.name,
             imagePath: secureUrl,
             fileType: fileType,
-            userId: targetUserId,
+            userId: user.id,
           },
         });
         console.log('✅ Database record created on retry:', upload.id);
@@ -189,10 +155,8 @@ export async function POST(req: NextRequest) {
       await prisma.activityLog.create({
         data: {
           userId: user.id,
-          action: customerEmail ? 'ADMIN_UPLOAD_FOR_CUSTOMER' : 'UPLOAD',
-          details: customerEmail 
-            ? `Admin uploaded ${fileType.toLowerCase()} for customer ${customerEmail}: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`
-            : `Uploaded ${fileType.toLowerCase()}: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`,
+          action: 'UPLOAD',
+          details: `Uploaded ${fileType.toLowerCase()}: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`,
         },
       });
     } catch (logError) {
@@ -229,8 +193,7 @@ export async function POST(req: NextRequest) {
       uploadId: upload.id,
       fileName: file.name,
       fileSize: file.size,
-      fileType: fileType,
-      customerEmail: customerEmail || null // Include customer email if provided
+      fileType: fileType
     }, { status: 200 });
 
   } catch (error) {

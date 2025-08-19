@@ -52,7 +52,6 @@ export default function ManagerUserPage() {
   const [cameraStarting, setCameraStarting] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
-  const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null); // New: store full upload object
   const [editingTitle, setEditingTitle] = useState<string>('');
   const [editingId, setEditingId] = useState<string>('');
   const [imageDataUrls, setImageDataUrls] = useState<{[key: string]: string}>({});
@@ -488,11 +487,8 @@ export default function ManagerUserPage() {
     }
   };
 
-  const openImageModal = (imagePath: string, upload: Upload) => {
-    // Use data URL if available, otherwise use the original path
-    const imageSource = imageDataUrls[upload.id] || imagePath;
-    setSelectedImage(imageSource);
-    setSelectedUpload(upload); // Store the full upload object
+  const openImageModal = (imagePath: string) => {
+    setSelectedImage(imagePath);
     setShowImageModal(true);
   };
 
@@ -802,7 +798,6 @@ export default function ManagerUserPage() {
                       // Use data URL if available, otherwise use the original path
                       const imageSource = imageDataUrls[upload.id] || upload.imagePath;
                       setSelectedImage(imageSource);
-                      setSelectedUpload(upload);
                       setShowImageModal(true);
                     }}
                   >
@@ -908,10 +903,10 @@ export default function ManagerUserPage() {
         >
           <div className="relative w-full h-full max-w-7xl max-h-full flex items-center justify-center">
             {/* Video Player */}
-            {selectedUpload && selectedUpload.fileType === 'VIDEO' ? (
+            {selectedImage.includes('.mp4') || selectedImage.includes('.mov') || selectedImage.includes('.avi') || selectedImage.includes('.webm') ? (
               <div className="relative w-full h-full flex items-center justify-center">
                 <video
-                  src={imageDataUrls[selectedUpload.id] || selectedUpload.imagePath}
+                  src={selectedImage}
                   className="w-full h-full max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                   controls
                   autoPlay
