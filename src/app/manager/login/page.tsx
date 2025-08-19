@@ -13,6 +13,8 @@ export default function ManagerLoginPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
+    console.log('🔄 Starting manager login for email:', email);
 
     try {
       const res = await fetch('/api/manager/login', {
@@ -21,7 +23,9 @@ export default function ManagerLoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
+      console.log('🔄 Login response status:', res.status);
       const data = await res.json();
+      console.log('🔄 Login response data:', data);
 
       if (res.ok) {
         console.log('🔄 Manager login successful, received data:', data);

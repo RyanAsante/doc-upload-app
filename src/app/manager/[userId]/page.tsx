@@ -25,6 +25,20 @@ export default function ManagerUserPage() {
   const managerEmail = localStorage.getItem('manager-email');
   console.log('🔄 localStorage check on component load:', { managerEmail });
   
+  // Test localStorage functionality
+  const testLocalStorage = () => {
+    console.log('🧪 Testing localStorage...');
+    localStorage.setItem('test-key', 'test-value');
+    const testValue = localStorage.getItem('test-key');
+    console.log('🧪 Test localStorage result:', testValue);
+    
+    // Check all localStorage items
+    console.log('🧪 All localStorage items:');
+    Object.keys(localStorage).forEach(key => {
+      console.log(`  ${key}: ${localStorage.getItem(key)}`);
+    });
+  };
+  
   const { userId } = useParams();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -486,6 +500,16 @@ export default function ManagerUserPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               <span>Back to Manager Dashboard</span>
+            </button>
+          </div>
+          
+          {/* Debug button for testing localStorage */}
+          <div className="mt-2">
+            <button 
+              onClick={testLocalStorage}
+              className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+            >
+              🧪 Test localStorage
             </button>
           </div>
         </div>
