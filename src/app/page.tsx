@@ -24,18 +24,6 @@ export default function HomePage() {
           </div>
           <div className="flex flex-wrap justify-center sm:justify-end gap-3 sm:gap-4">
             <button
-              onClick={() => router.push('/login')}
-              className="text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
-            >
-              Sign in
-            </button>
-            <button
-              onClick={() => router.push('/signup')}
-              className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
-            >
-              Get started
-            </button>
-            <button
               onClick={() => router.push('/manager/login')}
               className="text-emerald-600 hover:text-emerald-700 transition-colors px-3 py-2 rounded-lg hover:bg-emerald-50"
             >
