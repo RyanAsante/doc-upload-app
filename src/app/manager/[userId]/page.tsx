@@ -140,21 +140,26 @@ export default function ManagerUserPage() {
           setUser(data.user);
           setUploads(data.uploads);
           
-          // Convert all images to data URLs
+          // Convert all files to data URLs (both IMAGE and VIDEO)
           console.log('🔄 Starting to convert uploads:', data.uploads?.length || 0);
           if (data.uploads && data.uploads.length > 0) {
             data.uploads.forEach((upload: Upload) => {
               console.log('🔄 Processing upload:', { id: upload.id, fileType: upload.fileType, imagePath: upload.imagePath });
-              if (upload.fileType === 'IMAGE') {
-                console.log('🔄 Calling convertToDataUrl for IMAGE:', upload.id);
+              
+              // Process both IMAGE and VIDEO files
+              if (upload.fileType === 'IMAGE' || upload.fileType === 'VIDEO') {
+                console.log('🔄 Calling convertToDataUrl for', upload.fileType, ':', upload.id);
                 convertToDataUrl(upload.imagePath, upload.id);
               } else {
-                console.log('🔄 Skipping non-IMAGE file:', { id: upload.id, fileType: upload.fileType });
+                console.log('🔄 Skipping unsupported file type:', { id: upload.id, fileType: upload.fileType });
               }
             });
           } else {
             console.log('🔄 No uploads found in data');
           }
+          
+          // Debug: Check if imageDataUrls state is being updated
+          console.log('🔄 Current imageDataUrls state:', imageDataUrls);
           
           setLoading(false);
         })
@@ -166,6 +171,11 @@ export default function ManagerUserPage() {
       console.log('🔄 No userId provided');
     }
   }, [userId]);
+  
+  // Debug: Monitor imageDataUrls changes
+  useEffect(() => {
+    console.log('🔄 imageDataUrls state changed:', imageDataUrls);
+  }, [imageDataUrls]);
 
   const startCamera = async () => {
     try {
