@@ -19,28 +19,6 @@ type Upload = {
 };
 
 export default function ManagerUserPage() {
-  console.log('🔄 ManagerUserPage component loaded - START');
-  
-  // Check localStorage immediately
-  const managerEmail = localStorage.getItem('manager-email');
-  console.log('🔄 localStorage check on component load:', { managerEmail });
-  
-  console.log('🔄 ManagerUserPage component loaded - END');
-  
-  // Test localStorage functionality
-  const testLocalStorage = () => {
-    console.log('🧪 Testing localStorage...');
-    localStorage.setItem('test-key', 'test-value');
-    const testValue = localStorage.getItem('test-key');
-    console.log('🧪 Test localStorage result:', testValue);
-    
-    // Check all localStorage items
-    console.log('🧪 All localStorage items:');
-    Object.keys(localStorage).forEach(key => {
-      console.log(`  ${key}: ${localStorage.getItem(key)}`);
-    });
-  };
-  
   const { userId } = useParams();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -52,7 +30,7 @@ export default function ManagerUserPage() {
   const [cameraStarting, setCameraStarting] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
-  const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null); // Store full upload object
+  const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null);
   const [editingTitle, setEditingTitle] = useState<string>('');
   const [editingId, setEditingId] = useState<string>('');
   const [imageDataUrls, setImageDataUrls] = useState<{[key: string]: string}>({});
@@ -70,14 +48,10 @@ export default function ManagerUserPage() {
   // Convert secure file URLs to base64 data URLs
   const convertToDataUrl = async (imagePath: string, uploadId: string) => {
     try {
-      console.log('🔄 convertToDataUrl called with:', { imagePath, uploadId });
-      
-      // Get the current manager's email from localStorage
       const managerEmail = localStorage.getItem('manager-email');
-      console.log('🔄 Manager email from localStorage:', managerEmail);
       
       if (!managerEmail) {
-        console.error('❌ Manager email not found in localStorage');
+        console.error('Manager email not found in localStorage');
         return;
       }
 
@@ -87,7 +61,6 @@ export default function ManagerUserPage() {
       
       if (imagePath.includes('supabase.co')) {
         // This is a Supabase URL - use it directly
-        console.log('✅ Detected Supabase URL, using directly');
         fileName = imagePath.split('/').pop() || 'unknown';
         secureFileUrl = imagePath;
       } else if (imagePath.startsWith('/api/secure-file/')) {
@@ -96,12 +69,9 @@ export default function ManagerUserPage() {
         secureFileUrl = `/api/secure-file/${fileName}`;
       } else {
         // Unknown path format
-        console.log('⚠️ Unknown file path format:', imagePath);
         fileName = 'unknown';
         secureFileUrl = imagePath;
       }
-      
-      console.log('🔄 Converting file to data URL:', { uploadId, imagePath, fileName, secureFileUrl, managerEmail });
 
       const response = await fetch(secureFileUrl, {
         headers: {
@@ -109,15 +79,11 @@ export default function ManagerUserPage() {
         }
       });
 
-      console.log('🔄 Fetch response received:', { uploadId, status: response.status, statusText: response.statusText });
-
       if (response.ok) {
         const blob = await response.blob();
-        console.log('✅ File fetched successfully:', { uploadId, blobSize: blob.size, blobType: blob.type });
         
         const reader = new FileReader();
         reader.onloadend = () => {
-          console.log('✅ Data URL created for:', uploadId);
           setImageDataUrls(prev => ({
             ...prev,
             [uploadId]: reader.result as string
@@ -125,79 +91,47 @@ export default function ManagerUserPage() {
         };
         reader.readAsDataURL(blob);
       } else {
-        console.error('❌ Failed to fetch file:', { uploadId, status: response.status, statusText: response.statusText, imagePath });
-        
-        // Try to get more details about the error
-        try {
-          const errorText = await response.text();
-          console.error('❌ Error response body:', errorText);
-        } catch (e) {
-          console.error('❌ Could not read error response body');
-        }
+        console.error('Failed to fetch file:', { uploadId, status: response.status, statusText: response.statusText, imagePath });
       }
     } catch (error) {
-      console.error('❌ Failed to convert image to data URL:', { uploadId, error, imagePath });
+      console.error('Failed to convert image to data URL:', { uploadId, error, imagePath });
     }
   };
 
 
 
   useEffect(() => {
-    console.log('🔄 useEffect triggered with userId:', userId);
-    console.log('🔄 useEffect dependencies:', { userId, userIdType: typeof userId });
-    
     if (userId) {
-      console.log('🔄 Fetching user data from:', `/api/admin/user/${userId}`);
       fetch(`/api/admin/user/${userId}`)
         .then((res) => {
-          console.log('🔄 Response status:', res.status);
-          console.log('🔄 Response headers:', Object.fromEntries(res.headers.entries()));
           return res.json();
         })
         .then((data) => {
-          console.log('🔄 Received data:', { 
-            user: data.user, 
-            uploadsCount: data.uploads?.length || 0,
-            uploads: data.uploads 
-          });
-          
           setUser(data.user);
           setUploads(data.uploads);
           
           // Convert all files to data URLs (both IMAGE and VIDEO)
-          console.log('🔄 Starting to convert uploads:', data.uploads?.length || 0);
           if (data.uploads && data.uploads.length > 0) {
             data.uploads.forEach((upload: Upload) => {
-              console.log('🔄 Processing upload:', { id: upload.id, fileType: upload.fileType, imagePath: upload.imagePath });
               
               // Process both IMAGE and VIDEO files
               if (upload.fileType === 'IMAGE' || upload.fileType === 'VIDEO') {
                 // Only convert if not already converted
                 if (!imageDataUrls[upload.id]) {
-                  console.log('🔄 Calling convertToDataUrl for', upload.fileType, ':', upload.id);
                   convertToDataUrl(upload.imagePath, upload.id);
-                } else {
-                  console.log('🔄 File already converted, skipping:', upload.id);
                 }
-              } else {
-                console.log('🔄 Skipping unsupported file type:', { id: upload.id, fileType: upload.fileType });
               }
             });
-          } else {
-            console.log('🔄 No uploads found in data');
           }
-          
-          // Debug: Check if imageDataUrls state is being updated
-          console.log('🔄 Current imageDataUrls state:', imageDataUrls);
           
           setLoading(false);
         })
         .catch((error) => {
-          console.error('❌ Error fetching user data:', error);
+          console.error('Error fetching user data:', error);
           setLoading(false);
         });
     } else {
-      console.log('🔄 No userId provided');
+      console.log('No userId provided');
     }
   }, [userId]);
   
@@ -529,7 +463,7 @@ export default function ManagerUserPage() {
               <div className="w-12 h-12 sm:w-10 sm:h-10 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center overflow-hidden">
                 <img src="/AIS.jpg" alt="AIS Logo" className="w-full h-full object-cover" />
               </div>
-              <div>
+              <div className="ml-2">
                 <h1 className="text-2xl sm:text-xl font-semibold text-gray-900">Customer Dashboard</h1>
                 <p className="text-sm text-gray-500">Managing documents for {user.name}</p>
               </div>
@@ -539,16 +473,6 @@ export default function ManagerUserPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               <span>Back to Manager Dashboard</span>
-            </button>
-          </div>
-          
-          {/* Debug button for testing localStorage */}
-          <div className="mt-2">
-            <button 
-              onClick={testLocalStorage}
-              className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-            >
-              🧪 Test localStorage
             </button>
           </div>
         </div>
