@@ -239,7 +239,6 @@ export default function AdminPage() {
                   Asante International Shipping
                 </span>
               </button>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
             </div>
             <button
               onClick={handleLogout}

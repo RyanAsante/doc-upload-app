@@ -558,10 +558,6 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                   Asante International Shipping
                 </span>
               </button>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">User Details</h1>
-                <p className="text-gray-600"><span className="truncate block">{user.name}</span> (<span className="truncate block">{user.email}</span>)</p>
-              </div>
             </div>
             <button
               onClick={() => router.push('/admin')}
