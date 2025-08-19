@@ -85,12 +85,19 @@ export default function ManagerUserPage() {
       const secureFileUrl = `/api/secure-file/${fileName}`;
       
       console.log('🔄 Converting file to data URL:', { uploadId, imagePath, fileName, secureFileUrl, managerEmail });
+      
+      // Debug: Check if this is a Supabase URL
+      if (imagePath.includes('supabase.co')) {
+        console.log('⚠️ Detected Supabase URL, this may not work with secure-file API');
+      }
 
       const response = await fetch(secureFileUrl, {
         headers: {
           'x-user-email': managerEmail
         }
       });
+
+      console.log('🔄 Fetch response received:', { uploadId, status: response.status, statusText: response.statusText });
 
       if (response.ok) {
         const blob = await response.blob();
