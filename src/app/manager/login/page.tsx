@@ -4,15 +4,24 @@ import { useRouter } from 'next/navigation';
 
 export default function ManagerLoginPage() {
   const router = useRouter();
+  
+  // Form state management
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  /**
+   * Handles the manager login form submission
+   * - Validates credentials against the API
+   * - Stores manager email in localStorage for file access authentication
+   * - Redirects to manager dashboard on success
+   * - Displays error messages on failure
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      // Send login request to manager authentication API
       const res = await fetch('/api/manager/login', {
         method: 'POST',
         headers: {
@@ -24,131 +33,108 @@ export default function ManagerLoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        // Store manager email in localStorage
+        // Store manager email in localStorage for file access authentication
+        // This is used by the secure file API to verify manager permissions
         localStorage.setItem('manager-email', data.email);
         
-        // Verify it was stored correctly
+        // Verify the email was stored correctly before proceeding
         const storedEmail = localStorage.getItem('manager-email');
         
         if (storedEmail === data.email) {
+          // Redirect to manager dashboard on successful login
           router.push('/manager');
         } else {
+          // Handle localStorage storage failure
           setError('Failed to store login information');
         }
       } else {
+        // Display API error message
         setError(data.error || 'Login failed');
       }
     } catch (err) {
+      // Handle network or unexpected errors
       setError('An error occurred during login');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center px-6">
-      <div className="max-w-md w-full">
-        {/* Logo and Header */}
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
+      {/* Main login container with glassmorphism effect */}
+      <div className="w-full max-w-md">
+        {/* Header section with logo and title */}
         <div className="text-center mb-8">
-          <button
-            onClick={() => router.push('/')}
-            className="flex items-center justify-center space-x-2 mb-4 hover:opacity-80 transition-opacity mx-auto"
-          >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center overflow-hidden">
               <img 
                 src="/AIS.jpg" 
                 alt="Asante International Shipping Logo" 
-                className="w-full h-full object-cover rounded-xl"
+                className="w-full h-full object-cover"
               />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent whitespace-nowrap">
-              Asante International Shipping
-            </span>
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Manager Access</h1>
-          <p className="text-gray-600">Sign in with your approved manager account</p>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Manager Login</h1>
+          <p className="text-gray-600">Access your manager dashboard</p>
         </div>
 
-        {/* Form */}
+        {/* Login form with error handling */}
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-gray-200/50">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email input field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
               </label>
               <input
-                id="email"
                 type="email"
-                placeholder="Enter your email"
+                id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                placeholder="Enter your email"
               />
             </div>
+
+            {/* Password input field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <input
-                id="password"
                 type="password"
-                placeholder="Enter your password"
+                id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                placeholder="Enter your password"
               />
             </div>
 
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Signing in...' : 'Sign in as Manager'}
-            </button>
-            
+            {/* Error message display */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                <p className="text-red-600 text-sm">{error}</p>
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                {error}
               </div>
             )}
+
+            {/* Submit button */}
+            <button
+              type="submit"
+              className="w-full bg-emerald-600 text-white py-3 px-4 rounded-xl font-semibold hover:bg-emerald-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Sign In
+            </button>
           </form>
 
-          <div className="mt-6 text-center space-y-3">
-            <p className="text-gray-600">
-              <button
-                onClick={() => router.push('/admin/login')}
-                className="text-emerald-600 hover:text-emerald-700 font-medium"
-              >
-                Admin Access
-              </button>
-              {' '}or{' '}
-              <button
-                onClick={() => router.push('/')}
-                className="text-emerald-600 hover:text-emerald-700 font-medium"
-              >
-                Back to Home
-              </button>
-            </p>
-            <p className="text-gray-600">
-              <button
-                onClick={() => router.push('/forgot-password')}
-                className="text-emerald-600 hover:text-emerald-700 font-medium"
-              >
-                Forgot your password?
-              </button>
-            </p>
-            <div className="pt-4 border-t border-gray-200">
-              <p className="text-gray-600 text-sm">
-                Don&apos;t have a manager account?{' '}
-                <button
-                  onClick={() => router.push('/manager/register')}
-                  className="text-emerald-600 hover:text-emerald-700 font-medium"
-                >
-                  Apply here
-                </button>
-              </p>
-            </div>
+          {/* Navigation links */}
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => router.push('/')}
+              className="text-emerald-600 hover:text-emerald-700 text-sm"
+            >
+              ← Back to Home
+            </button>
           </div>
         </div>
       </div>

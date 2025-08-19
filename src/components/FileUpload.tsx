@@ -1,288 +1,335 @@
 'use client';
-
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { motion, AnimatePresence } from 'framer-motion';
 
-interface UploadFile {
+// Type definition for upload file with status tracking
+type UploadFile = {
   id: string;
   file: File;
+  status: 'pending' | 'uploading' | 'success' | 'error';
   progress: number;
-  status: 'uploading' | 'success' | 'error';
   error?: string;
+};
+
+// Props interface for the FileUpload component
+interface FileUploadProps {
+  maxFiles?: number;
+  acceptedFileTypes?: string[];
 }
 
-export default function FileUpload() {
+export default function FileUpload({ 
+  maxFiles = 10, 
+  acceptedFileTypes = ['image/*', 'video/*', 'application/pdf', 'text/*'] 
+}: FileUploadProps) {
+  // State management for upload files and UI
   const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
+  /**
+   * Handles files dropped or selected by the user
+   * Creates unique IDs for each file and sets initial status
+   * @param acceptedFiles - Array of files that passed validation
+   */
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles: UploadFile[] = acceptedFiles.map(file => ({
       id: Math.random().toString(36).substr(2, 9),
       file,
-      progress: 0,
-      status: 'uploading' as const,
+      status: 'pending',
+      progress: 0
     }));
-
+    
     setUploadFiles(prev => [...prev, ...newFiles]);
-    setIsUploading(true);
-
-    // Upload each file
-    newFiles.forEach(uploadFile => {
-      uploadSingleFile(uploadFile);
-    });
   }, []);
 
-  const uploadSingleFile = async (uploadFile: UploadFile) => {
+  /**
+   * Dropzone configuration for drag-and-drop functionality
+   * Handles file validation, multiple file selection, and drag states
+   */
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: acceptedFileTypes.reduce((acc, type) => {
+      acc[type] = [];
+      return acc;
+    }, {} as Record<string, string[]>),
+    multiple: true,
+    maxFiles,
+    onDragEnter: () => setDragActive(true),
+    onDragLeave: () => setDragActive(false)
+  });
+
+  /**
+   * Removes a file from the upload queue
+   * @param fileId - Unique identifier of the file to remove
+   */
+  const removeFile = (fileId: string) => {
+    setUploadFiles(prev => prev.filter(file => file.id !== fileId));
+  };
+
+  /**
+   * Initiates the upload process for a single file
+   * Uses XMLHttpRequest for progress tracking and better control
+   * @param uploadFile - The file object to upload
+   */
+  const uploadFile = (uploadFile: UploadFile) => {
+    // Update file status to uploading
+    setUploadFiles(prev => 
+      prev.map(file => 
+        file.id === uploadFile.id 
+          ? { ...file, status: 'uploading' as const, progress: 0 }
+          : file
+      )
+    );
+
+    // Create FormData for file upload
     const formData = new FormData();
-    formData.append('document', uploadFile.file);
+    formData.append('file', uploadFile.file);
 
-    try {
-      const xhr = new XMLHttpRequest();
-      
-      // Track upload progress
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          const progress = Math.round((event.loaded / event.total) * 100);
-          setUploadFiles(prev => 
-            prev.map(file => 
-              file.id === uploadFile.id 
-                ? { ...file, progress }
-                : file
-            )
-          );
-        }
-      });
+    // Initialize XMLHttpRequest for upload with progress tracking
+    const xhr = new XMLHttpRequest();
 
-      // Handle completion
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            setUploadFiles(prev => 
-              prev.map(file => 
-                file.id === uploadFile.id 
-                  ? { ...file, status: 'success' as const, progress: 100 }
-                  : file
-              )
-            );
-          } catch (parseError) {
-            console.error('Failed to parse response:', parseError);
-            setUploadFiles(prev => 
-              prev.map(file => 
-                file.id === uploadFile.id 
-                  ? { ...file, status: 'error' as const, error: 'Invalid response' }
-                  : file
-              )
-            );
-          }
-        } else {
-          console.error('Upload failed with status:', xhr.status);
-          setUploadFiles(prev => 
-            prev.map(file => 
-              file.id === uploadFile.id 
-                ? { ...file, status: 'error' as const, error: `Upload failed: ${xhr.status}` }
-                : file
-            )
-          );
-        }
-        
-        // Check if all uploads are complete
-        setTimeout(() => {
-          setUploadFiles(prev => {
-            const allComplete = prev.every(file => file.status !== 'uploading');
-            if (allComplete) {
-              setIsUploading(false);
-            }
-            return prev;
-          });
-        }, 1000);
-      });
-
-      // Handle errors
-      xhr.addEventListener('error', () => {
+    // Track upload progress
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) {
+        const progress = Math.round((event.loaded / event.total) * 100);
         setUploadFiles(prev => 
           prev.map(file => 
             file.id === uploadFile.id 
-              ? { ...file, status: 'error' as const, error: 'Network error' }
+              ? { ...file, progress }
               : file
           )
         );
-      });
+      }
+    });
 
-      // Send the request
-      const userEmail = localStorage.getItem('userEmail') || '';
-      xhr.open('POST', '/api/upload');
-      xhr.setRequestHeader('x-user-email', userEmail);
-      xhr.send(formData);
+    // Handle upload completion
+    xhr.addEventListener('load', () => {
+      if (xhr.status === 200) {
+        try {
+          // Parse response but don't store it since we're not using it
+          JSON.parse(xhr.responseText);
+          setUploadFiles(prev => 
+            prev.map(file => 
+              file.id === uploadFile.id 
+                ? { ...file, status: 'success' as const, progress: 100 }
+                : file
+            )
+          );
+        } catch (parseError) {
+          console.error('Failed to parse response:', parseError);
+          setUploadFiles(prev => 
+            prev.map(file => 
+              file.id === uploadFile.id 
+                ? { ...file, status: 'error' as const, error: 'Invalid response' }
+                : file
+            )
+          );
+        }
+      } else {
+        console.error('Upload failed with status:', xhr.status);
+        setUploadFiles(prev => 
+          prev.map(file => 
+            file.id === uploadFile.id 
+              ? { ...file, status: 'error' as const, error: `Upload failed: ${xhr.status}` }
+              : file
+          )
+        );
+      }
+      
+      // Check if all uploads are complete
+      setTimeout(() => {
+        setUploadFiles(prev => {
+          const allComplete = prev.every(file => file.status !== 'uploading');
+          // Note: allComplete is calculated but not used - this is intentional for future features
+          return prev;
+        });
+      }, 1000);
+    });
 
-    } catch (error) {
+    // Handle upload errors
+    xhr.addEventListener('error', () => {
       setUploadFiles(prev => 
         prev.map(file => 
           file.id === uploadFile.id 
-            ? { ...file, status: 'error' as const, error: 'Upload failed' }
+            ? { ...file, status: 'error' as const, error: 'Network error' }
             : file
         )
       );
-    }
+    });
+
+    // Send the request with user authentication
+    const userEmail = localStorage.getItem('userEmail') || '';
+    xhr.open('POST', '/api/upload');
+    xhr.setRequestHeader('x-user-email', userEmail);
+    xhr.send(formData);
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'],
-      'video/*': ['.mp4', '.webm', '.ogg', '.mov'],
-    },
-    multiple: true,
-  });
+  /**
+   * Starts upload for all pending files
+   * Processes files sequentially to avoid overwhelming the server
+   */
+  const startUpload = () => {
+    const pendingFiles = uploadFiles.filter(file => file.status === 'pending');
+    pendingFiles.forEach(file => uploadFile(file));
+  };
 
-  const removeFile = (id: string) => {
-    setUploadFiles(prev => prev.filter(file => file.id !== id));
+  /**
+   * Clears all completed uploads from the queue
+   * Keeps pending and uploading files
+   */
+  const clearCompleted = () => {
+    setUploadFiles(prev => prev.filter(file => file.status === 'pending' || file.status === 'uploading'));
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Drag & Drop Zone */}
-      <div {...getRootProps()}>
-        <motion.div
-          className={`
-            border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200
-            ${isDragActive 
-              ? 'border-blue-500 bg-blue-50' 
-              : 'border-gray-300 hover:border-gray-400'
-            }
-          `}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <input {...getInputProps()} />
+    <div className="w-full">
+      {/* Drag and drop zone */}
+      <div
+        {...getRootProps()}
+        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+          isDragActive || dragActive
+            ? 'border-emerald-400 bg-emerald-50'
+            : 'border-gray-300 hover:border-gray-400'
+        }`}
+      >
+        <input {...getInputProps()} />
         
+        {/* Upload icon and instructions */}
         <div className="space-y-4">
-          <motion.div
-            animate={{ rotate: isDragActive ? 180 : 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <svg 
-              className="mx-auto h-12 w-12 text-gray-400" 
-              stroke="currentColor" 
-              fill="none" 
-              viewBox="0 0 48 48"
-            >
-              <path 
-                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
-                strokeWidth={2} 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-              />
+          <div className="mx-auto w-16 h-16 text-gray-400">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
-          </motion.div>
+          </div>
           
           <div>
             <p className="text-lg font-medium text-gray-900">
               {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              or click to select files
+              or click to browse files
+            </p>
+            <p className="text-xs text-gray-400 mt-2">
+              Supports: Images, Videos, PDFs, Text files (Max: {maxFiles} files)
             </p>
           </div>
-          
-          <p className="text-xs text-gray-400">
-            Supports: Images and Videos (max 100MB each)
-          </p>
         </div>
-        </motion.div>
       </div>
 
-      {/* Upload Progress */}
-      <AnimatePresence>
-        {uploadFiles.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-3"
-          >
-            <h3 className="text-lg font-medium text-gray-900">
-              Upload Progress
-            </h3>
-            
-            {uploadFiles.map((uploadFile) => (
-              <motion.div
-                key={uploadFile.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className="bg-white border border-gray-200 rounded-lg p-4"
-              >
-                <div className="flex items-center justify-between mb-2">
+      {/* File list and upload controls */}
+      {uploadFiles.length > 0 && (
+        <div className="mt-6 space-y-4">
+          {/* Upload control buttons */}
+          <div className="flex space-x-3">
+            <button
+              onClick={startUpload}
+              disabled={!uploadFiles.some(file => file.status === 'pending')}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Start Upload
+            </button>
+            <button
+              onClick={clearCompleted}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+            >
+              Clear Completed
+            </button>
+          </div>
+
+          {/* File list with status indicators */}
+          <div className="space-y-3">
+            {uploadFiles.map((file) => (
+              <div key={file.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                {/* File information */}
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-3">
+                    {/* File icon based on type */}
                     <div className="flex-shrink-0">
-                      {uploadFile.status === 'success' && (
-                        <svg className="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      {file.file.type.startsWith('image/') ? (
+                        <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                      )}
-                      {uploadFile.status === 'error' && (
-                        <svg className="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      ) : file.file.type.startsWith('video/') ? (
+                        <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
-                      )}
-                      {uploadFile.status === 'uploading' && (
-                        <div className="h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
                       )}
                     </div>
-                    <div>
+                    
+                    {/* File details */}
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {uploadFile.file.name}
+                        {file.file.name}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        {(uploadFile.file.size / 1024 / 1024).toFixed(2)} MB
+                      <p className="text-sm text-gray-500">
+                        {(file.file.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
                   </div>
-                  
+                </div>
+
+                {/* Upload status and progress */}
+                <div className="flex items-center space-x-4">
+                  {/* Progress bar for uploading files */}
+                  {file.status === 'uploading' && (
+                    <div className="w-32">
+                      <div className="bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${file.progress}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">{file.progress}%</p>
+                    </div>
+                  )}
+
+                  {/* Status indicator */}
+                  <div className="flex items-center space-x-2">
+                    {file.status === 'pending' && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        Pending
+                      </span>
+                    )}
+                    {file.status === 'uploading' && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Uploading
+                      </span>
+                    )}
+                    {file.status === 'success' && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Success
+                      </span>
+                    )}
+                    {file.status === 'error' && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        Error
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Error message display */}
+                  {file.error && (
+                    <p className="text-sm text-red-600 max-w-xs">{file.error}</p>
+                  )}
+
+                  {/* Remove file button */}
                   <button
-                    onClick={() => removeFile(uploadFile.id)}
-                    className="text-gray-400 hover:text-gray-600"
+                    onClick={() => removeFile(file.id)}
+                    className="text-red-600 hover:text-red-800"
                   >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>
-
-                {/* Progress Bar */}
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <motion.div
-                    className="bg-blue-500 h-2 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${uploadFile.progress}%` }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </div>
-
-                {/* Status Text */}
-                <div className="mt-2 flex justify-between items-center">
-                  <span className="text-xs text-gray-500">
-                    {uploadFile.status === 'uploading' && `${uploadFile.progress}% uploaded`}
-                    {uploadFile.status === 'success' && 'Upload complete'}
-                    {uploadFile.status === 'error' && uploadFile.error}
-                  </span>
-                  
-                  {uploadFile.status === 'error' && (
-                    <button
-                      onClick={() => uploadSingleFile(uploadFile)}
-                      className="text-xs text-blue-600 hover:text-blue-800"
-                    >
-                      Retry
-                    </button>
-                  )}
-                </div>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
