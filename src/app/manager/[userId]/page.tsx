@@ -172,8 +172,13 @@ export default function ManagerUserPage() {
               
               // Process both IMAGE and VIDEO files
               if (upload.fileType === 'IMAGE' || upload.fileType === 'VIDEO') {
-                console.log('🔄 Calling convertToDataUrl for', upload.fileType, ':', upload.id);
-                convertToDataUrl(upload.imagePath, upload.id);
+                // Only convert if not already converted
+                if (!imageDataUrls[upload.id]) {
+                  console.log('🔄 Calling convertToDataUrl for', upload.fileType, ':', upload.id);
+                  convertToDataUrl(upload.imagePath, upload.id);
+                } else {
+                  console.log('🔄 File already converted, skipping:', upload.id);
+                }
               } else {
                 console.log('🔄 Skipping unsupported file type:', { id: upload.id, fileType: upload.fileType });
               }
@@ -196,10 +201,7 @@ export default function ManagerUserPage() {
     }
   }, [userId]);
   
-  // Debug: Monitor imageDataUrls changes
-  useEffect(() => {
-    console.log('🔄 imageDataUrls state changed:', imageDataUrls);
-  }, [imageDataUrls]);
+
 
   const startCamera = async () => {
     try {
