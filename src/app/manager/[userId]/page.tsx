@@ -86,13 +86,12 @@ export default function ManagerUserPage() {
       let secureFileUrl: string;
       
       if (imagePath.includes('supabase.co')) {
-        // This is a Supabase URL - extract the filename from the end
-        console.log('⚠️ Detected Supabase URL, extracting filename from end');
+        // This is a Supabase URL - use it directly
+        console.log('✅ Detected Supabase URL, using directly');
         fileName = imagePath.split('/').pop() || 'unknown';
-        // For Supabase URLs, we need to use the full URL directly
         secureFileUrl = imagePath;
       } else if (imagePath.startsWith('/api/secure-file/')) {
-        // This is a secure-file path - extract filename
+        // This is a legacy secure-file path - extract filename
         fileName = imagePath.replace('/api/secure-file/', '');
         secureFileUrl = `/api/secure-file/${fileName}`;
       } else {

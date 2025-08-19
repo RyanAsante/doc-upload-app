@@ -67,11 +67,24 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         return;
       }
 
-      // Extract filename from the imagePath (remove /api/secure-file/ prefix)
-      const fileName = imagePath.replace('/api/secure-file/', '');
-      const secureFileUrl = `/api/secure-file/${fileName}`;
+      // Handle different file path types
+      let secureFileUrl: string;
       
-      console.log('🔄 Converting file to data URL:', { uploadId, imagePath, fileName, secureFileUrl, adminEmail });
+      if (imagePath.includes('supabase.co')) {
+        // This is a Supabase URL - use it directly
+        console.log('✅ Detected Supabase URL, using directly');
+        secureFileUrl = imagePath;
+      } else if (imagePath.startsWith('/api/secure-file/')) {
+        // This is a legacy secure-file path - extract filename
+        const fileName = imagePath.replace('/api/secure-file/', '');
+        secureFileUrl = `/api/secure-file/${fileName}`;
+      } else {
+        // Unknown path format
+        console.log('⚠️ Unknown file path format:', imagePath);
+        secureFileUrl = imagePath;
+      }
+      
+      console.log('🔄 Converting file to data URL:', { uploadId, imagePath, secureFileUrl, adminEmail });
 
       const response = await fetch(secureFileUrl, {
         headers: {

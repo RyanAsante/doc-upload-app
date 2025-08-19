@@ -36,7 +36,24 @@ export default function Dashboard() {
       const userEmail = localStorage.getItem('userEmail');
       if (!userEmail) return;
 
-      const response = await fetch(imagePath, {
+      // Handle different file path types
+      let secureFileUrl: string;
+      
+      if (imagePath.includes('supabase.co')) {
+        // This is a Supabase URL - use it directly
+        console.log('✅ Detected Supabase URL, using directly');
+        secureFileUrl = imagePath;
+      } else if (imagePath.startsWith('/api/secure-file/')) {
+        // This is a legacy secure-file path - extract filename
+        const fileName = imagePath.replace('/api/secure-file/', '');
+        secureFileUrl = `/api/secure-file/${fileName}`;
+      } else {
+        // Unknown path format
+        console.log('⚠️ Unknown file path format:', imagePath);
+        secureFileUrl = imagePath;
+      }
+
+      const response = await fetch(secureFileUrl, {
         headers: {
           'x-user-email': userEmail
         }

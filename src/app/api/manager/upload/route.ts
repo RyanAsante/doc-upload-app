@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '@/lib/prisma';
-import { SecureFileAccess } from '@/lib/secure-storage/file-access';
+import { getSupabaseClient } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { sendFileUploadNotification } from '@/lib/email';
 
@@ -99,14 +99,31 @@ export async function POST(req: NextRequest) {
     const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const newFileName = `${fileId}_${cleanFileName}`;
     
-    // Store file securely (outside public folder)
-    const secureFileName = await SecureFileAccess.storeFile({
-      originalname: newFileName,
-      buffer: buffer
-    }, manager.id);
+    // Upload file to Supabase storage instead of local storage
+    const supabase = getSupabaseClient();
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('uploads')
+      .upload(newFileName, buffer, {
+        contentType: file.type,
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) {
+      console.error('❌ Supabase upload error:', uploadError);
+      return NextResponse.json({ error: 'Failed to upload file to storage' }, { status: 500 });
+    }
+
+    // Get the public URL for the uploaded file
+    const { data: urlData } = supabase.storage
+      .from('uploads')
+      .getPublicUrl(newFileName);
+
+    const supabaseUrl = urlData.publicUrl;
+    console.log('✅ File uploaded to Supabase:', { fileName: newFileName, url: supabaseUrl });
     
-    // Create secure access URL (not public)
-    const secureUrl = `/api/secure-file/${secureFileName}`;
+    // Create secure access URL (Supabase URL)
+    const secureUrl = supabaseUrl;
 
     // Find or create customer user
     let customer = await prisma.user.findUnique({
