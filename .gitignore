@@ -30,7 +30,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files can opt-in for committing if needed
 .env*
 
 # vercel
@@ -43,3 +43,6 @@ next-env.d.ts
 /src/generated/prisma
 
 # Secure file storage - No longer needed with Supabase storage
+
+# Build cache
+tsconfig.tsbuildinfo

@@ -56,12 +56,9 @@ export default function FileUpload() {
 
       // Handle completion
       xhr.addEventListener('load', () => {
-        console.log('📡 Upload response:', { status: xhr.status, response: xhr.responseText });
-        
         if (xhr.status === 200) {
           try {
             const response = JSON.parse(xhr.responseText);
-            console.log('✅ Upload successful:', response);
             setUploadFiles(prev => 
               prev.map(file => 
                 file.id === uploadFile.id 
@@ -70,7 +67,7 @@ export default function FileUpload() {
               )
             );
           } catch (parseError) {
-            console.error('❌ Failed to parse response:', parseError);
+            console.error('Failed to parse response:', parseError);
             setUploadFiles(prev => 
               prev.map(file => 
                 file.id === uploadFile.id 
@@ -80,7 +77,7 @@ export default function FileUpload() {
             );
           }
         } else {
-          console.error('❌ Upload failed with status:', xhr.status, 'Response:', xhr.responseText);
+          console.error('Upload failed with status:', xhr.status);
           setUploadFiles(prev => 
             prev.map(file => 
               file.id === uploadFile.id 
@@ -115,13 +112,6 @@ export default function FileUpload() {
 
       // Send the request
       const userEmail = localStorage.getItem('userEmail') || '';
-      console.log('📤 Sending upload request:', { 
-        file: uploadFile.file.name, 
-        size: uploadFile.file.size, 
-        type: uploadFile.file.type,
-        userEmail 
-      });
-      
       xhr.open('POST', '/api/upload');
       xhr.setRequestHeader('x-user-email', userEmail);
       xhr.send(formData);

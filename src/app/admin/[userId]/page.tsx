@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 interface User {
   id: string;
@@ -23,29 +23,27 @@ interface ManagerActivity {
   action: string;
   details: string;
   createdAt: string;
-  managerName: string;
-  managerEmail: string;
-  managerRole: string;
 }
 
-
-
-export default function AdminUserPage({ params }: { params: Promise<{ userId: string }> }) {
-  console.log('🔄 AdminUserPage component loaded');
+export default function AdminUserPage() {
+  const params = useParams();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
+  const [cameraOn, setCameraOn] = useState(false);
+  const [cameraStarting, setCameraStarting] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<Upload | null>(null);
-  const [editingTitle, setEditingTitle] = useState('');
+  const [editingTitle, setEditingTitle] = useState<string>('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isManager, setIsManager] = useState(false);
-  const [cameraOn, setCameraOn] = useState(false);
+  const [imageDataUrls, setImageDataUrls] = useState<{[key: string]: string}>({});
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [managerActivity, setManagerActivity] = useState<ManagerActivity[]>([]);
   const [loadingActivity, setLoadingActivity] = useState(false);
-  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
-  const [imageDataUrls, setImageDataUrls] = useState<{[key: string]: string}>({});
   
   // Video recording states
   const [isRecording, setIsRecording] = useState(false);
@@ -53,7 +51,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const [isProcessingVideo, setIsProcessingVideo] = useState(false);
-
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -72,20 +70,16 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       
       if (imagePath.includes('supabase.co')) {
         // This is a Supabase URL - use it directly
-        console.log('✅ Detected Supabase URL, using directly');
         secureFileUrl = imagePath;
       } else if (imagePath.startsWith('/api/secure-file/')) {
-        // This is a legacy secure-file path - extract filename
+        // Extract filename from secure-file path
         const fileName = imagePath.replace('/api/secure-file/', '');
         secureFileUrl = `/api/secure-file/${fileName}`;
       } else {
         // Unknown path format
-        console.log('⚠️ Unknown file path format:', imagePath);
         secureFileUrl = imagePath;
       }
       
-      console.log('🔄 Converting file to data URL:', { uploadId, imagePath, secureFileUrl, adminEmail });
-
       const response = await fetch(secureFileUrl, {
         headers: {
           'x-user-email': adminEmail
@@ -94,11 +88,9 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
 
       if (response.ok) {
         const blob = await response.blob();
-        console.log('✅ File fetched successfully:', { uploadId, blobSize: blob.size, blobType: blob.type });
         
         const reader = new FileReader();
         reader.onloadend = () => {
-          console.log('✅ Data URL created for:', uploadId);
           setImageDataUrls(prev => ({
             ...prev,
             [uploadId]: reader.result as string
@@ -106,26 +98,25 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         };
         reader.readAsDataURL(blob);
       } else {
-        console.error('❌ Failed to fetch file:', { uploadId, status: response.status, statusText: response.statusText, imagePath });
+        console.error('Failed to fetch file:', { uploadId, status: response.status, statusText: response.statusText, imagePath });
         
         // Try to get more details about the error
         try {
           const errorText = await response.text();
-          console.error('❌ Error response body:', errorText);
+          console.error('Error response body:', errorText);
         } catch (e) {
-          console.error('❌ Could not read error response body');
+          console.error('Could not read error response body');
         }
       }
     } catch (error) {
-      console.error('❌ Failed to convert image to data URL:', { uploadId, error, imagePath });
+      console.error('Failed to convert image to data URL:', { uploadId, error, imagePath });
     }
   };
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const resolvedParams = await params;
-        const response = await fetch(`/api/admin/user/${resolvedParams.userId}`);
+        const response = await fetch(`/api/admin/user/${params.userId as string}`);
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
@@ -134,20 +125,15 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
           setCurrentUserRole(data.user.role); // Set current user's role
           
           // Convert all images to data URLs
-          console.log('🔄 Starting to convert uploads:', data.uploads?.length || 0);
           data.uploads?.forEach((upload: Upload) => {
-            console.log('🔄 Processing upload:', { id: upload.id, fileType: upload.fileType, imagePath: upload.imagePath });
             if (upload.fileType === 'IMAGE') {
-              console.log('🔄 Calling convertToDataUrl for IMAGE:', upload.id);
               convertToDataUrl(upload.imagePath, upload.id);
-            } else {
-              console.log('🔄 Skipping non-IMAGE file:', { id: upload.id, fileType: upload.fileType });
             }
           });
           
           // If this is a manager, fetch their activity
           if (data.user.role === 'MANAGER') {
-            fetchManagerActivity(resolvedParams.userId);
+            fetchManagerActivity(params.userId as string);
           }
         }
       } catch (error) {
@@ -158,11 +144,10 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
     };
 
     fetchUserData();
-  }, [params]);
+  }, [params.userId]);
 
   const fetchManagerActivity = async (managerId: string) => {
     try {
-      setLoadingActivity(true);
       const response = await fetch(`/api/admin/manager-activity/${managerId}`);
       if (response.ok) {
         const data = await response.json();
@@ -758,8 +743,6 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
                 <p className="text-gray-600">Loading activity...</p>
               </div>
-            ) : managerActivity.length === 0 ? (
-              <p className="text-gray-600 text-center py-8">No activity logged yet for this manager.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">

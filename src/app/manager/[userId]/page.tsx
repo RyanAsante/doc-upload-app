@@ -64,7 +64,7 @@ export default function ManagerUserPage() {
         fileName = imagePath.split('/').pop() || 'unknown';
         secureFileUrl = imagePath;
       } else if (imagePath.startsWith('/api/secure-file/')) {
-        // This is a legacy secure-file path - extract filename
+        // Extract filename from secure-file path
         fileName = imagePath.replace('/api/secure-file/', '');
         secureFileUrl = `/api/secure-file/${fileName}`;
       } else {

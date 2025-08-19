@@ -9,48 +9,37 @@ export default function ManagerLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
     
-    console.log('🔄 Starting manager login for email:', email);
-
     try {
       const res = await fetch('/api/manager/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ email, password }),
       });
 
-      console.log('🔄 Login response status:', res.status);
       const data = await res.json();
-      console.log('🔄 Login response data:', data);
 
       if (res.ok) {
-        console.log('🔄 Manager login successful, received data:', data);
+        // Store manager email in localStorage
+        localStorage.setItem('manager-email', data.email);
         
-        // Store manager email in localStorage for file access
-        if (data.email) {
-          console.log('🔄 Storing manager email in localStorage:', data.email);
-          localStorage.setItem('manager-email', data.email);
-          
-          // Verify it was stored
-          const storedEmail = localStorage.getItem('manager-email');
-          console.log('🔄 Verified stored email:', storedEmail);
+        // Verify it was stored correctly
+        const storedEmail = localStorage.getItem('manager-email');
+        
+        if (storedEmail === data.email) {
+          router.push('/manager');
         } else {
-          console.error('❌ No email received in login response');
+          setError('Failed to store login information');
         }
-        
-        router.push('/manager');
       } else {
-        console.error('❌ Manager login failed:', data.error);
         setError(data.error || 'Login failed');
       }
     } catch (err) {
       setError('An error occurred during login');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -80,7 +69,7 @@ export default function ManagerLoginPage() {
 
         {/* Form */}
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-gray-200/50">
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
