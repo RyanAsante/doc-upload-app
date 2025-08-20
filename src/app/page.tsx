@@ -48,10 +48,6 @@ export default function HomePage() {
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
           <div className="text-center">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-sm font-medium mb-6 sm:mb-8">
-              ✨ Secure document management for modern teams
-            </div>
-            
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
               Store your documents
               <span className="block bg-gradient-to-r from-teal-600 to-teal-700 bg-clip-text text-transparent">
@@ -71,11 +67,12 @@ export default function HomePage() {
               >
                 Get started →
               </button>
+              {/* Sign In Button */}
               <button
                 onClick={() => router.push('/login')}
-                className="border-2 border-gray-300 text-gray-700 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:border-gray-400 hover:bg-gray-50 transition-all duration-200"
+                className="px-8 py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-white/30 transition-all duration-300 transform hover:scale-105 border border-white/30 shadow-lg hover:shadow-xl"
               >
-                Sign in
+                Sign In
               </button>
             </div>
           </div>

@@ -35,27 +35,24 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center px-6">
-      <div className="max-w-md w-full">
-        {/* Logo */}
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Header section with logo and title - moved to top */}
         <div className="text-center mb-8">
-          <div 
-            className="flex items-center justify-center space-x-2 mb-4 cursor-pointer hover:scale-105 transition-transform duration-200"
-            onClick={() => router.push('/')}
-          >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center overflow-hidden">
               <img 
                 src="/AIS.jpg" 
                 alt="Asante International Shipping Logo" 
-                className="w-full h-full object-cover rounded-xl"
+                className="w-full h-full object-cover"
               />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-teal-700 bg-clip-text text-transparent">
-              Asante International Shipping
-            </span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Access</h1>
-          <p className="text-gray-600">Enter admin password to continue</p>
+          <div className="mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Asante International Shipping</h1>
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">Admin Access</h2>
+            <p className="text-gray-600">Sign in with your admin credentials</p>
+          </div>
         </div>
 
         {/* Form */}

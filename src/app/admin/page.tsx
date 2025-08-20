@@ -220,32 +220,34 @@ export default function AdminPage() {
 
 
       {/* Header */}
-      <div className="bg-white/70 backdrop-blur-sm border-b border-gray-200/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-6 space-y-4 sm:space-y-0">
-            <div className="flex items-center space-x-4 sm:space-x-3">
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+            {/* Logo and title section */}
+            <button onClick={() => router.push('/')} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+              <div className="w-12 h-12 sm:w-10 sm:h-10 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center overflow-hidden">
+                <img src="/AIS.jpg" alt="AIS Logo" className="w-full h-full object-cover" />
+              </div>
+              {/* Company name - hidden on mobile, visible on desktop */}
+              <div className="hidden sm:block">
+                <h1 className="text-2xl sm:text-xl font-semibold text-gray-900">Asante International Shipping</h1>
+                <p className="text-sm text-gray-500">Admin Dashboard</p>
+              </div>
+              {/* Mobile title - only visible on mobile */}
+              <div className="sm:hidden">
+                <h1 className="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
+              </div>
+            </button>
+            
+            {/* Logout button - positioned to the right on all devices */}
+            <div className="w-full sm:w-auto flex justify-end">
               <button
-                onClick={() => router.push('/')}
-                className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+                onClick={() => router.push('/admin/login')}
+                className="text-gray-600 hover:text-gray-900 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
               >
-                <div className="w-12 h-12 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center overflow-hidden">
-                  <img 
-                    src="/AIS.jpg" 
-                    alt="Asante International Shipping Logo" 
-                    className="w-full h-full object-cover rounded-xl"
-                  />
-                </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                  Asante International Shipping
-                </span>
+                Logout
               </button>
             </div>
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-red-700 transition-all duration-200"
-            >
-              Logout
-            </button>
           </div>
         </div>
       </div>
