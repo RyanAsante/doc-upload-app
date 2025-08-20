@@ -459,7 +459,7 @@ export default function ManagerUserPage() {
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-            <button onClick={() => router.push('/manager')} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+            <button onClick={() => router.push('/')} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
               <div className="w-12 h-12 sm:w-10 sm:h-10 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center overflow-hidden">
                 <img src="/AIS.jpg" alt="AIS Logo" className="w-full h-full object-cover" />
               </div>

@@ -63,7 +63,10 @@ export default function ManagerLoginPage() {
       <div className="w-full max-w-md">
         {/* Header section with logo and title */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
+          <button 
+            onClick={() => router.push('/')} 
+            className="flex flex-col items-center mb-4 hover:opacity-80 transition-opacity"
+          >
             <div className="w-16 h-16 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center overflow-hidden">
               <img 
                 src="/AIS.jpg" 
@@ -71,7 +74,7 @@ export default function ManagerLoginPage() {
                 className="w-full h-full object-cover"
               />
             </div>
-          </div>
+          </button>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Manager Login</h1>
           <p className="text-gray-600">Access your manager dashboard</p>
         </div>

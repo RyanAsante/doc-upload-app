@@ -39,7 +39,10 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md">
         {/* Header section with logo and title - moved to top */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
+          <button 
+            onClick={() => router.push('/')} 
+            className="flex flex-col items-center mb-6 hover:opacity-80 transition-opacity"
+          >
             <div className="w-20 h-20 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center overflow-hidden">
               <img 
                 src="/AIS.jpg" 
@@ -47,9 +50,9 @@ export default function AdminLoginPage() {
                 className="w-full h-full object-cover"
               />
             </div>
-          </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-teal-800 mb-2 mt-2">Asante International Shipping</h1>
+          </button>
           <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-teal-800 mb-2">Asante International Shipping</h1>
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">Admin Access</h2>
             <p className="text-gray-600">Sign in with your admin credentials</p>
           </div>

@@ -158,6 +158,15 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div className="min-w-0 flex-1">
+            <button 
+              onClick={() => router.push('/')} 
+              className="flex items-center space-x-3 hover:opacity-80 transition-opacity mb-4"
+            >
+              <div className="w-10 h-10 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center overflow-hidden">
+                <img src="/AIS.jpg" alt="AIS Logo" className="w-full h-full object-cover" />
+              </div>
+              <span className="text-lg font-semibold text-teal-600">Asante International Shipping</span>
+            </button>
             <h1 className="text-3xl font-bold text-gray-900">My Documents</h1>
             <p className="text-gray-600 mt-2">
               Welcome back, <span className="font-medium text-gray-900">{user?.name}</span>! You have {user?.uploadCount} documents.

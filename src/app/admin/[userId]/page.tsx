@@ -529,7 +529,7 @@ export default function AdminUserPage() {
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-3">
               <button
-                onClick={() => router.push('/admin')}
+                onClick={() => router.push('/')}
                 className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
               >
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
@@ -717,7 +717,7 @@ export default function AdminUserPage() {
               
               {/* Document Upload Section */}
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">📄 Document Upload</h4>
+                <h4 className="text-sm font-medium text-gray-900 mb-2">�� Document Upload</h4>
                 <div className="flex items-center space-x-4">
                   <input
                     type="file"
