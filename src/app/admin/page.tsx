@@ -230,19 +230,18 @@ export default function AdminPage() {
               </div>
               {/* Company name - hidden on mobile, visible on desktop */}
               <div className="hidden sm:block">
-                <h1 className="text-2xl sm:text-xl font-semibold text-gray-900">Asante International Shipping</h1>
-                <p className="text-sm text-gray-500">Admin Dashboard</p>
+                <h1 className="text-2xl sm:text-xl font-semibold text-teal-600">Asante International Shipping</h1>
               </div>
               {/* Mobile title - only visible on mobile */}
               <div className="sm:hidden">
-                <h1 className="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
+                <h1 className="text-xl font-semibold text-teal-600">Asante International Shipping</h1>
               </div>
             </button>
             
-            {/* Logout button - positioned to the right on all devices */}
+            {/* Logout button - positioned to the top right on all devices */}
             <div className="w-full sm:w-auto flex justify-end">
               <button
-                onClick={() => router.push('/admin/login')}
+                onClick={handleLogout}
                 className="text-gray-600 hover:text-gray-900 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
               >
                 Logout

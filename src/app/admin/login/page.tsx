@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-teal-400 via-teal-500 to-teal-600 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header section with logo and title - moved to top */}
         <div className="text-center mb-8">
@@ -49,7 +49,7 @@ export default function AdminLoginPage() {
             </div>
           </div>
           <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Asante International Shipping</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-teal-800 mb-2">Asante International Shipping</h1>
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">Admin Access</h2>
             <p className="text-gray-600">Sign in with your admin credentials</p>
           </div>
@@ -59,9 +59,6 @@ export default function AdminLoginPage() {
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-gray-200/50">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Admin Password
-              </label>
               <input
                 id="password"
                 type="password"
