@@ -65,7 +65,7 @@ export default function ManagerLoginPage() {
         <div className="text-center mb-8">
           <button 
             onClick={() => router.push('/')} 
-            className="flex flex-col items-center mb-4 hover:opacity-80 transition-opacity"
+            className="flex flex-col items-center mb-4 hover:opacity-80 transition-opacity mx-auto"
           >
             <div className="w-16 h-16 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center overflow-hidden">
               <img 
@@ -74,7 +74,7 @@ export default function ManagerLoginPage() {
                 className="w-full h-full object-cover"
               />
             </div>
-            <span className="text-2xl font-bold text-teal-600 mt-2">Asante International Shipping</span>
+            <span className="text-2xl font-bold text-teal-600 mt-2 text-center">Asante International Shipping</span>
           </button>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Manager Login</h1>
           <p className="text-gray-600">Access your manager dashboard</p>

@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
         <div className="text-center mb-8">
           <button 
             onClick={() => router.push('/')} 
-            className="flex flex-col items-center mb-6 hover:opacity-80 transition-opacity"
+            className="flex flex-col items-center mb-6 hover:opacity-80 transition-opacity mx-auto"
           >
             <div className="w-20 h-20 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center overflow-hidden">
               <img 
@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
                 className="w-full h-full object-cover"
               />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-teal-800 mb-2 mt-2">Asante International Shipping</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-teal-800 mb-2 mt-2 text-center">Asante International Shipping</h1>
           </button>
           <div className="mb-6">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">Admin Access</h2>
