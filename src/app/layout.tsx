@@ -27,6 +27,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/AIS.jpg" />
+        <link rel="shortcut icon" href="/AIS.jpg" />
+        <link rel="apple-touch-icon" href="/AIS.jpg" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
