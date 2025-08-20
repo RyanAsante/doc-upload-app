@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Document management system for Asante International Shipping",
   icons: {
     icon: '/AIS.jpg',
+    shortcut: '/AIS.jpg',
+    apple: '/AIS.jpg',
   },
 };
 
@@ -27,11 +29,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/AIS.jpg" />
-        <link rel="shortcut icon" href="/AIS.jpg" />
-        <link rel="apple-touch-icon" href="/AIS.jpg" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
