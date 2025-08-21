@@ -70,7 +70,7 @@ export default function HomePage() {
               {/* Sign In Button */}
               <button
                 onClick={() => router.push('/login')}
-                className="px-8 py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-white/30 transition-all duration-300 transform hover:scale-105 border border-white/30 shadow-lg hover:shadow-xl"
+                className="px-8 py-3 bg-white/20 backdrop-blur-sm text-gray-800 font-semibold rounded-xl hover:bg-white/30 transition-all duration-300 transform hover:scale-105 border border-white/30 shadow-lg hover:shadow-xl"
               >
                 Sign In
               </button>
@@ -132,13 +132,13 @@ export default function HomePage() {
             </button>
             <button
               onClick={() => router.push('/admin/login')}
-              className="border-2 border-white/30 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white/10 transition-all duration-200"
+              className="border-2 border-white/30 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white/10 transition-all duration-200 transform hover:scale-105"
             >
               Admin Access
             </button>
             <button
               onClick={() => router.push('/manager/register')}
-              className="border-2 border-white/30 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white/10 transition-all duration-200"
+              className="border-2 border-white/30 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white/10 transition-all duration-200 transform hover:scale-105"
             >
               Become a Manager
             </button>
