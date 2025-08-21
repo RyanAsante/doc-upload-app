@@ -27,10 +27,10 @@ export async function sendVerificationEmail(
     const result = await resend.emails.send({
       from: process.env.FROM_EMAIL || 'noreply@updates.asanteinternational.com',
       to: [email],
-      subject: 'Verify Your Email - Doc Upload App',
+      subject: 'Verify Your Email - Asante International Shipping',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333; text-align: center;">Welcome to Doc Upload App!</h2>
+          <h2 style="color: #333; text-align: center;">Welcome to Asante International Shipping!</h2>
           <p>Hi ${name},</p>
           <p>Thank you for signing up! Please verify your email address by clicking the button below:</p>
           <div style="text-align: center; margin: 30px 0;">
@@ -44,7 +44,7 @@ export async function sendVerificationEmail(
           <p>This link will expire in 24 hours.</p>
           <p>If you didn't create an account, you can safely ignore this email.</p>
           <br>
-          <p>Best regards,<br>The Doc Upload App Team</p>
+          <p>Best regards,<br>The Asante International Shipping Team</p>
         </div>
       `,
     });
@@ -87,7 +87,7 @@ export async function sendPasswordResetEmail(
     const result = await resend.emails.send({
       from: process.env.FROM_EMAIL || 'noreply@updates.asanteinternational.com',
       to: [email],
-      subject: 'Reset Your Password - Doc Upload App',
+      subject: 'Reset Your Password - Asante International Shipping',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333; text-align: center;">Password Reset Request</h2>
@@ -104,7 +104,7 @@ export async function sendPasswordResetEmail(
           <p>This link will expire in 1 hour.</p>
           <p>If you didn't request a password reset, you can safely ignore this email.</p>
           <br>
-          <p>Best regards,<br>The Doc Upload App Team</p>
+          <p>Best regards,<br>The Asante International Shipping Team</p>
         </div>
       `,
     });
@@ -167,7 +167,7 @@ export async function sendFileUploadNotification(
           
           <p>If you have any questions about this upload, please contact your ${uploadedByRole.toLowerCase()}.</p>
           <br>
-          <p>Best regards,<br>The Doc Upload App Team</p>
+          <p>Best regards,<br>The Asante International Shipping Team</p>
         </div>
       `,
     });
